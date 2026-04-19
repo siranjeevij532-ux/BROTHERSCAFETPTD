@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Brothers Cafe</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Poppins',sans-serif;background:#f0f2f5;overflow-x:hidden}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#1a1a2e,#0f3460);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 16px rgba(0,0,0,.3);}
+.hdr-info{display:flex;align-items:center;gap:10px}
+.hdr-av{width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hdr-title{color:white;font-size:15px;font-weight:700;line-height:1.2}
+.hdr-sub{color:rgba(255,255,255,.5);font-size:11px}
+.logout-a{background:rgba(231,76,60,.2);border:1px solid rgba(231,76,60,.35);color:#ff9090;padding:7px 12px;border-radius:20px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap}
+
+/* BOTTOM TAB BAR */
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:300;background:white;display:flex;border-top:1px solid #e9ecef;box-shadow:0 -2px 16px rgba(0,0,0,.08)}
+.tab{flex:1;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;border:none;background:transparent;font-family:'Poppins',sans-serif;position:relative;transition:.15s}
+.tab-ic{font-size:22px}
+.tab-lb{font-size:10px;font-weight:600;color:#aaa;transition:.15s}
+.tab.on .tab-lb{color:#e74c3c}
+.tab.on .tab-ic{transform:scale(1.08)}
+.live-pulse{position:absolute;top:7px;right:calc(50% - 20px);width:7px;height:7px;background:#e74c3c;border-radius:50%;display:none}
+.live-pulse.show{display:block;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+
+/* PAGE PANELS */
+.panel{display:none;padding:12px 14px 90px;max-width:620px;margin:0 auto;min-height:calc(100vh - 58px)}
+.panel.on{display:block}
+
+/* ══ LIVE ORDER PANEL ══ */
+.live-card{background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:20px;padding:20px;color:white;position:relative;overflow:hidden;margin-bottom:14px}
+.live-card::after{content:'';position:absolute;bottom:-30px;right:-30px;width:100px;height:100px;background:rgba(255,255,255,.04);border-radius:50%}
+.lc-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(231,76,60,.25);border:1px solid rgba(231,76,60,.4);color:#ff9090;padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:12px}
+.lc-dot{width:6px;height:6px;background:#e74c3c;border-radius:50%;animation:blink 1s infinite}
+.lc-ordnum{font-size:11px;opacity:.5;margin-bottom:5px}
+.lc-icon{font-size:46px;display:block;margin-bottom:9px;line-height:1}
+.lc-title{font-size:20px;font-weight:800;margin-bottom:4px}
+.lc-desc{font-size:12px;opacity:.6;margin-bottom:16px;line-height:1.5}
+
+/* progress */
+.prog{display:flex;align-items:center;margin-bottom:16px}
+.ps{display:flex;flex-direction:column;align-items:center;flex:1}
+.pd{width:29px;height:29px;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:12px;transition:.4s}
+.ps.done .pd{background:#27ae60;border-color:#27ae60}
+.ps.active .pd{background:#e74c3c;border-color:#e74c3c;animation:pp 1s infinite}
+@keyframes pp{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.pl{font-size:8px;color:rgba(255,255,255,.38);margin-top:3px;text-align:center}
+.ps.done .pl,.ps.active .pl{color:rgba(255,255,255,.82);font-weight:600}
+.pline{flex:1;height:2px;background:rgba(255,255,255,.1);max-width:22px}
+.pline.done{background:#27ae60}
+
+/* items inside live card */
+.lc-items{background:rgba(255,255,255,.07);border-radius:11px;padding:11px 13px;margin-bottom:14px}
+.lci-hdr{font-size:11px;font-weight:700;opacity:.55;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.lci-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.lci-row:last-child{border:none}
+.lci-name{opacity:.85;flex:1}
+.lci-price{font-weight:700;color:#ff9090;flex-shrink:0}
+.extra-tag{font-size:9px;background:rgba(230,126,34,.35);color:#f39c12;padding:1px 6px;border-radius:10px;margin-left:5px;font-weight:700;vertical-align:middle}
+
+.lc-total{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.07);border-radius:11px;padding:11px 14px;margin-bottom:14px}
+.lt-lb{font-size:12px;opacity:.55}
+.lt-val{font-size:20px;font-weight:800;color:#ff9090}
+
+.lc-actions{display:flex;flex-direction:column;gap:8px}
+.la{width:100%;padding:13px;border:none;border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none}
+.la-bill{background:#27ae60;color:white}
+.la-add{background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.2)}
+.la-gone{background:#e74c3c;color:white}
+
+/* no order state */
+.no-order{background:white;border-radius:20px;padding:38px 22px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.no-icon{font-size:52px;margin-bottom:13px}
+.no-title{font-size:17px;font-weight:700;color:#2c3e50;margin-bottom:7px}
+.no-sub{font-size:13px;color:#888;margin-bottom:22px;line-height:1.5}
+.start-btn{display:inline-flex;align-items:center;gap:7px;padding:13px 26px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border-radius:50px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 15px rgba(231,76,60,.35)}
+
+/* ══ HISTORY PANEL ══ */
+.stats-row{display:flex;gap:8px;margin-bottom:14px}
+.stat-c{flex:1;background:white;border-radius:14px;padding:12px 8px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.sc-val{font-size:17px;font-weight:800;color:#1a1a2e}
+.sc-lb{font-size:10px;color:#888;margin-top:2px}
+
+.sec-hdr{font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 9px}
+.oc{background:white;border-radius:14px;margin-bottom:9px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.oc-h{padding:13px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.oc-num{font-size:13px;font-weight:700;color:#2c3e50}
+.oc-date{font-size:11px;color:#aaa;margin-top:2px}
+.sb{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;flex-shrink:0}
+.sb-done{background:#d4edda;color:#27ae60}
+.sb-cancel{background:#fde8e8;color:#e74c3c}
+.sb-live{background:#e8f4ff;color:#3498db}
+.chev{color:#ccc;font-size:13px;transition:.2s;margin-left:6px;flex-shrink:0}
+.chev.op{transform:rotate(180deg)}
+.oc-b{display:none;padding:9px 14px 13px;border-top:1px solid #f5f5f5}
+.oc-b.op{display:block}
+.oi{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:#555;border-bottom:1px solid #f9f9f9}
+.oi:last-of-type{border:none}
+.ot{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding-top:8px;margin-top:5px;border-top:2px solid #f0f0f0;color:#2c3e50}
+.ot span:last-child{color:#e74c3c}
+.bill-link{display:block;margin-top:9px;text-align:center;font-size:12px;color:#3498db;font-weight:600;text-decoration:none}
+
+.empty-h{text-align:center;padding:50px 20px;color:#aaa}
+.empty-h .ei{font-size:48px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-info">
+    <div class="hdr-av">👤</div>
+    <div>
+      <div class="hdr-title">{{ customer_name }}</div>
+      <div class="hdr-sub">{{ customer_phone }} · Brothers Cafe</div>
+    </div>
+  </div>
+  <a href="/customer/logout/" class="logout-a" onclick="return confirm('Log out?')">🚪 Out</a>
+</div>
+
+<!-- ══ LIVE ORDER PANEL ══ -->
+<div class="panel on" id="panel-live">
+  {% if active_order %}
+  {% with o=active_order.order %}
+  <div class="live-card">
+    <div class="lc-badge"><span class="lc-dot"></span> Live Order</div>
+    <div class="lc-ordnum" id="loNum">Order #{{ o.order_number }}</div>
+    <span class="lc-icon" id="loIcon">⏳</span>
+    <div class="lc-title" id="loTitle">{{ o.get_status_display }}</div>
+    <div class="lc-desc" id="loDesc">Waiting for staff update…</div>
+
+    <div class="prog">
+      <div class="ps" id="ps-pending"><div class="pd">📋</div><div class="pl">Got it</div></div>
+      <div class="pline" id="pl1"></div>
+      <div class="ps" id="ps-accepted"><div class="pd">✅</div><div class="pl">Accepted</div></div>
+      <div class="pline" id="pl2"></div>
+      <div class="ps" id="ps-preparing"><div class="pd">👨‍🍳</div><div class="pl">Cooking</div></div>
+      <div class="pline" id="pl3"></div>
+      <div class="ps" id="ps-ready"><div class="pd">🔔</div><div class="pl">Ready</div></div>
+      <div class="pline" id="pl4"></div>
+      <div class="ps" id="ps-completed"><div class="pd">🎉</div><div class="pl">Done</div></div>
+    </div>
+
+    <!-- Items (all orders combined) -->
+    <div class="lc-items" id="lcItems">
+      <div class="lci-hdr">🛒 Your Order</div>
+      {% for o2 in active_order.all_orders %}
+        {% if o2.parent_order %}<div class="lci-hdr" style="margin-top:8px">➕ Extra Order</div>{% endif %}
+        {% for item in o2.items.all %}
+        <div class="lci-row">
+          <span class="lci-name">{{ item.quantity }}× {{ item.menu_item.name }}{% if o2.parent_order %}<span class="extra-tag">Extra</span>{% endif %}</span>
+          <span class="lci-price">₹{{ item.total_price }}</span>
+        </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+
+    <div id="loParcelRow" style="display:none;background:rgba(255,255,255,.07);border-radius:11px;padding:9px 14px;margin-bottom:8px;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;opacity:.55">📦 Parcel Charge</span>
+      <span style="font-size:14px;font-weight:700;color:#f39c12" id="loParcel">₹0</span>
+    </div>
+    <div class="lc-total">
+      <span class="lt-lb">Total Bill</span>
+      <span class="lt-val" id="loTot">₹{{ active_order.combined_total }}</span>
+    </div>
+
+    <div class="lc-actions" id="loActions"></div>
+  </div>
+  {% endwith %}
+  {% else %}
+  <!-- No active order -->
+  <div class="no-order">
+    <div class="no-icon">🍽️</div>
+    <div class="no-title">No active order</div>
+    <div class="no-sub">Scan your table QR code to start ordering, or use the button below.</div>
+    {% if last_table_id %}
+    <a href="/table/{{ last_table_id }}/menu/" class="start-btn">📋 Start Ordering</a>
+    {% elif is_takeaway %}
+    <a href="/takeaway/" class="start-btn">🛍️ Start Ordering</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- ══ HISTORY PANEL ══ -->
+<div class="panel" id="panel-history">
+  <div class="stats-row">
+    <div class="stat-c"><div class="sc-val">{{ orders|length }}</div><div class="sc-lb">Orders</div></div>
+    <div class="stat-c"><div class="sc-val" style="color:#27ae60">{{ completed_count }}</div><div class="sc-lb">Completed</div></div>
+    <div class="stat-c"><div class="sc-val" style="color:#e74c3c;font-size:15px">₹{{ total_spent|floatformat:0 }}</div><div class="sc-lb">Spent</div></div>
+  </div>
+
+  {% if orders %}
+  <div class="sec-hdr">Past Orders</div>
+  {% for entry in orders %}{% with order=entry.order %}
+  {% if order.status == 'completed' or order.status == 'cancelled' %}
+  <div class="oc">
+    <div class="oc-h" onclick="tog('{{ order.id }}')">
+      <div>
+        <div class="oc-num">📋 #{{ order.order_number }}</div>
+        <div class="oc-date">{{ order.created_at|date:"d M Y, h:i A" }}{% if entry.reorder_count > 0 %} · +{{ entry.reorder_count }} extra{% endif %}</div>
+      </div>
+      <div style="display:flex;align-items:center">
+        <span class="sb {% if order.status == 'completed' %}sb-done{% elif order.status == 'cancelled' %}sb-cancel{% else %}sb-live{% endif %}">
+          {% if order.status == 'completed' %}✅ Done
+          {% elif order.status == 'cancelled' %}❌ Cancelled
+          {% elif order.status == 'pending' %}⏳ Pending
+          {% elif order.status == 'accepted' %}✅ Accepted
+          {% elif order.status == 'preparing' %}👨‍🍳 Cooking
+          {% elif order.status == 'ready' %}🔔 Ready
+          {% else %}{{ order.get_status_display }}{% endif %}
+        </span>
+        <span class="chev" id="chev-{{ order.id }}">⌃</span>
+      </div>
+    </div>
+    <div class="oc-b" id="body-{{ order.id }}">
+      {% for item in entry.all_items %}
+      <div class="oi"><span>{{ item.quantity }}× {{ item.menu_item.name }}</span><span style="font-weight:600;color:#e74c3c">₹{{ item.total_price }}</span></div>
+      {% endfor %}
+      <div class="ot"><span>Total</span><span>₹{{ entry.combined_total }}</span></div>
+      {% if order.status == 'completed' %}
+      <a href="/order/{{ order.id }}/bill/" class="bill-link">🧾 View Bill</a>
+      {% elif order.status not in 'cancelled,completed' %}
+      <a href="#" onclick="switchTab('live');return false" class="bill-link">📡 Track Live →</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+  {% endwith %}{% endfor %}
+  {% else %}
+  <div class="empty-h"><div class="ei">📋</div><div style="font-weight:700;color:#2c3e50;font-size:16px;margin-bottom:6px">No orders yet</div><div style="font-size:13px">Your order history will appear here.</div></div>
+  {% endif %}
+</div>
+
+<!-- TAB BAR -->
+<div class="tabs">
+  <button class="tab on" id="tab-live" onclick="switchTab('live')">
+    <span class="live-pulse {% if active_order %}show{% endif %}" id="livePulse"></span>
+    <span class="tab-ic">📡</span>
+    <span class="tab-lb">Live Order</span>
+  </button>
+  <button class="tab" id="tab-history" onclick="switchTab('history')">
+    <span class="tab-ic">📋</span>
+    <span class="tab-lb">History</span>
+  </button>
+</div>
+
+<script>
+// ── TABS ──────────────────────────────────────────────────────
+var curTab = 'live';
+function switchTab(t){
+  var prev = curTab;
+  curTab = t;
+  document.querySelectorAll('.panel').forEach(function(el){ el.classList.remove('on'); });
+  document.querySelectorAll('.tab').forEach(function(el){ el.classList.remove('on'); });
+  document.getElementById('panel-'+t).classList.add('on');
+  document.getElementById('tab-'+t).classList.add('on');
+  // Push history so back button from history → live works
+  if(t === 'history' && prev === 'live'){
+    history.pushState({tab:'history'}, '');
+  } else {
+    history.replaceState({tab:t}, '');
+  }
+  window.scrollTo({top:0});
+}
+
+// Back button behaviour:
+// - History tab → back → live tab
+// - Live tab → back → go to menu page (categories)
+history.replaceState({sentinel:true}, '');   // entry before this page
+history.pushState({tab:'live'}, '');         // current page
+
+window.addEventListener('popstate', function(e){
+  if(curTab === 'history'){
+    // History → live tab
+    switchTab('live');
+    history.replaceState({tab:'live'}, '');
+  } else if(e.state && e.state.sentinel){
+    // Back from live tab → go to menu categories
+    var menuUrl = null;
+    {% if last_table_id %}menuUrl = '/table/{{ last_table_id }}/menu/';
+    {% elif is_takeaway %}menuUrl = '/takeaway/';{% endif %}
+    if(menuUrl){ window.location.href = menuUrl; }
+    else { history.pushState({tab:'live'}, ''); }
+  }
+});
+
+// On load: if redirected from order placement (#live hash), show live tab
+(function(){
+  var h = window.location.hash;
+  if(h === '#history'){
+    switchTab('history');
+    if(history.replaceState) history.replaceState({tab:'history'}, '', window.location.pathname);
+  } else {
+    switchTab('live');
+    if(history.replaceState) history.replaceState({tab:'live'}, '', window.location.pathname);
+  }
+})();
+
+// ── HISTORY ACCORDION ─────────────────────────────────────────
+function tog(id){
+  var b=document.getElementById('body-'+id), c=document.getElementById('chev-'+id);
+  b.classList.toggle('op'); c.classList.toggle('op');
+}
+
+// ── LIVE ORDER POLLING ────────────────────────────────────────
+var LIVE_ID  = {% if active_order %}{{ active_order.order.id }}{% else %}null{% endif %};
+var TABLE_ID = {% if last_table_id %}{{ last_table_id }}{% else %}null{% endif %};
+var IS_TW    = {% if is_takeaway %}true{% else %}false{% endif %};
+var curSt    = '{% if active_order %}{{ active_order.order.status }}{% endif %}';
+
+var CFG = {
+  pending:   {icon:'⏳', title:'Order Received!',  desc:'Your order is waiting to be accepted by staff.'},
+  accepted:  {icon:'✅', title:'Order Accepted!',  desc:'Our team has accepted your order — getting ready!'},
+  preparing: {icon:'👨‍🍳',title:'Being Prepared!', desc:'Our chef is cooking your food right now!'},
+  ready:     {icon:'🔔', title:'Ready to Serve!',  desc:'Your food is ready! Staff will bring it to you.'},
+  completed: {icon:'🎉', title:'Bill Ready!',      desc:'Your order is complete. Tap below to view your bill.'},
+  cancelled: {icon:'❌', title:'Order Cancelled',  desc:'Your order was cancelled by staff.'},
+};
+var SORD = ['pending','accepted','preparing','ready','completed'];
+
+function $id(id){ return document.getElementById(id); }
+
+function updateProg(status){
+  var idx = SORD.indexOf(status);
+  SORD.forEach(function(s,i){
+    var el=$id('ps-'+s); if(!el) return;
+    el.classList.remove('done','active');
+    if(i<idx) el.classList.add('done');
+    else if(i===idx) el.classList.add('active');
+  });
+  [1,2,3,4].forEach(function(n){
+    var l=$id('pl'+n); if(l) l.classList.toggle('done', idx>=n);
+  });
+}
+
+function updateActions(status, allDone, orderId){
+  var acts = $id('loActions'); if(!acts) return;
+  var menuUrl = TABLE_ID ? '/table/'+TABLE_ID+'/menu/' : '/takeaway/';
+  acts.innerHTML = '';
+  if(status === 'cancelled'){
+    acts.innerHTML = '<a href="'+menuUrl+'" class="la la-gone">📋 Back to Menu</a>';
+  } else if(allDone){
+    acts.innerHTML = '<a href="/order/'+(orderId||LIVE_ID)+'/bill/" class="la la-bill">🧾 View Bill & Pay</a>';
+  } else {
+    var addUrl = TABLE_ID
+      ? '/table/'+TABLE_ID+'/menu/?add_to_order='+(orderId||LIVE_ID)
+      : '/takeaway/?add_to_order='+(orderId||LIVE_ID);
+    acts.innerHTML = '<a href="'+addUrl+'" class="la la-add" style="display:block;width:100%;padding:13px;border:none;border-radius:12px;font-family:Poppins,sans-serif;font-size:14px;font-weight:700;text-align:center;text-decoration:none;background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.2)">➕ Add More Items</a>';
+  }
+}
+
+function updateItemsBlock(orders_data){
+  var el = $id('lcItems'); if(!el || !orders_data) return;
+  var html = '';
+  orders_data.forEach(function(ord, idx){
+    html += '<div class="lci-hdr" style="margin-top:'+(idx>0?'10px':'0')+'px">'+(idx===0?'🛒 Your Order':'➕ Extra Order '+idx)+'</div>';
+    ord.items.forEach(function(item){
+      html += '<div class="lci-row"><span class="lci-name">'+item.qty+'× '+item.name+(idx>0?'<span class="extra-tag">Extra</span>':'')+'</span><span class="lci-price">₹'+item.total+'</span></div>';
+    });
+  });
+  el.innerHTML = html;
+}
+
+function renderLive(data){
+  var status = data.status || 'pending';
+  var cfg = CFG[status] || CFG.pending;
+  if($id('loIcon'))  $id('loIcon').textContent  = cfg.icon;
+  if($id('loTitle')) $id('loTitle').textContent = cfg.title;
+  if($id('loDesc'))  $id('loDesc').textContent  = cfg.desc;
+  if(data.combined_total !== undefined && $id('loTot'))
+    $id('loTot').textContent = '₹'+parseFloat(data.combined_total).toFixed(0);
+  // Show parcel charge if present
+  var parcelRow = $id('loParcelRow');
+  var parcelEl  = $id('loParcel');
+  if(parcelRow && parcelEl){
+    if(data.combined_parcel && data.combined_parcel > 0){
+      parcelRow.style.display = 'flex';
+      parcelEl.textContent = '+₹'+parseFloat(data.combined_parcel).toFixed(0);
+    } else {
+      parcelRow.style.display = 'none';
+    }
+  }
+  if($id('loNum') && data.order_number)
+    $id('loNum').textContent = 'Order #'+data.order_number;
+  updateProg(status);
+  updateActions(status, data.all_completed, data.order_id);
+  if(data.orders) updateItemsBlock(data.orders);
+  curSt = status;
+}
+
+// Initial render on load
+if(LIVE_ID){
+  renderLive({
+    status:'{{ active_order.order.status|default:"pending" }}',
+    all_completed:{% if active_order and active_order.order.status == 'completed' %}true{% else %}false{% endif %},
+    combined_total:{{ active_order.combined_total|default:0 }},
+    combined_parcel:{{ active_order.combined_parcel|default:0 }}
+  });
+}
+
+// Poll every 5s
+async function pollLive(){
+  if(!LIVE_ID) return;
+  try{
+    var r = await fetch('/live-order/data/?order_id='+LIVE_ID,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+    var d = await r.json();
+    renderLive(d);
+    // Reload page when order finishes (to refresh history tab too)
+    if((d.all_completed || d.status==='cancelled') && curSt !== d.status){
+      setTimeout(function(){ location.reload(); }, 1200);
+    }
+  }catch(e){}
+}
+if(LIVE_ID) setInterval(pollLive, 5000);
+</script>
+</body>
+</html>

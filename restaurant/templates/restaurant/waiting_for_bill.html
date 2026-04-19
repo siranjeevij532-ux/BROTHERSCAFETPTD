@@ -1,0 +1,38 @@
+{% extends 'restaurant/base.html' %}
+{% block title %}Waiting for Bill{% endblock %}
+{% block extra_css %}
+<style>
+body { background: linear-gradient(135deg,#1a1a2e,#0f3460); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.wait-card { background: white; border-radius: 20px; padding: 40px; text-align: center; max-width: 380px; width: 90%; }
+.wait-icon { font-size: 64px; margin-bottom: 20px; animation: spin 4s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+h2 { color: #2c3e50; margin-bottom: 10px; }
+p { color: #888; font-size: 14px; margin-bottom: 20px; }
+.order-info { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 20px; font-size: 14px; }
+.status-pill { display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 13px; margin-top: 10px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="wait-card">
+    <div class="wait-icon">⏳</div>
+    <h2>Bill Not Ready Yet</h2>
+    <p>Your order is still being processed. Bill will be available once the staff marks your order as completed.</p>
+    <div class="order-info">
+        <strong>Order #{{ order.order_number }}</strong><br>
+        Status: <span class="status-pill" style="background:#fff3cd;color:#856404">{{ order.get_status_display }}</span>
+    </div>
+    <a href="/order/{{ order.id }}/status/" class="btn btn-primary" style="text-decoration:none;display:inline-flex">
+        ← Back to Order Status
+    </a>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Auto redirect when order is completed
+setInterval(async () => {
+    const resp = await fetch('/order/{{ order.id }}/status/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    const data = await resp.json();
+    if (data.status === 'completed') location.reload();
+}, 5000);
+</script>
+{% endblock %}

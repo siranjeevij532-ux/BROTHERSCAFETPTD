@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Brothers Cafe</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:#f0f2f5;min-height:100vh}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#1a1a2e,#0f3460);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3);}
+.hdr-l{display:flex;align-items:center;gap:11px}
+.back-btn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.hdr-title{color:white;font-size:16px;font-weight:700}
+.hdr-sub{color:rgba(255,255,255,.55);font-size:11px;margin-top:1px}
+.add-btn-hdr{background:#e74c3c;color:white;border:none;padding:8px 14px;border-radius:50px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+/* CONTENT */
+.content{max-width:600px;margin:0 auto;padding:16px 16px 60px}
+
+/* LIVE STATUS CARD */
+.live-card{background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:20px;padding:22px;margin-bottom:16px;color:white;position:relative;overflow:hidden;}
+.live-card::after{content:'';position:absolute;bottom:-30px;right:-30px;width:110px;height:110px;background:rgba(255,255,255,.04);border-radius:50%}
+.live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(231,76,60,.25);border:1px solid rgba(231,76,60,.4);color:#ff8888;padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:14px;}
+.live-dot{width:7px;height:7px;background:#e74c3c;border-radius:50%;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.live-order-num{font-size:12px;opacity:.55;margin-bottom:6px}
+.live-icon{font-size:50px;display:block;margin-bottom:10px;line-height:1}
+.live-title{font-size:22px;font-weight:800;margin-bottom:5px}
+.live-desc{font-size:12px;opacity:.6;margin-bottom:18px;line-height:1.5}
+
+/* PROGRESS */
+.prog{display:flex;align-items:center;margin-bottom:20px}
+.pg-step{display:flex;flex-direction:column;align-items:center;flex:1}
+.pg-dot{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:14px;transition:.4s;}
+.pg-step.done .pg-dot{background:#27ae60;border-color:#27ae60}
+.pg-step.active .pg-dot{background:#e74c3c;border-color:#e74c3c;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.pg-lbl{font-size:9px;color:rgba(255,255,255,.4);margin-top:4px;text-align:center}
+.pg-step.done .pg-lbl,.pg-step.active .pg-lbl{color:rgba(255,255,255,.85);font-weight:600}
+.pg-line{flex:1;height:2px;background:rgba(255,255,255,.12);max-width:26px}
+.pg-line.done{background:#27ae60}
+
+/* TOTAL */
+.live-total{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.08);border-radius:11px;padding:11px 15px;}
+.lt-label{font-size:12px;opacity:.6}
+.lt-val{font-size:20px;font-weight:800;color:#ff8888}
+
+/* ACTIONS */
+.actions{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.act-btn{width:100%;padding:14px;border:none;border-radius:12px;font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;}
+.btn-bill{background:#27ae60;color:white}
+.btn-add{background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.2)}
+.btn-home{background:#e74c3c;color:white}
+
+/* ORDER ITEMS CARD */
+.items-card{background:white;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+.ic-title{font-size:14px;font-weight:700;color:#2c3e50;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.ic-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px;}
+.ic-row:last-of-type{border:none}
+.ic-name{color:#2c3e50}
+.ic-price{font-weight:700;color:#e74c3c}
+.extra-badge{font-size:10px;background:#fff0e0;color:#e67e22;padding:2px 7px;border-radius:20px;font-weight:700;margin-left:5px}
+.total-row{display:flex;justify-content:space-between;font-size:16px;font-weight:800;padding-top:12px;margin-top:8px;border-top:2px solid #f0f0f0;color:#2c3e50}
+.total-row span:last-child{color:#e74c3c}
+
+/* CUSTOMER CARD */
+.cust-card{background:white;border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;}
+.cust-av{width:40px;height:40px;background:linear-gradient(135deg,#3498db,#2980b9);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:19px;flex-shrink:0;}
+.cust-name{font-size:14px;font-weight:700;color:#2c3e50}
+.cust-phone{font-size:12px;color:#888;margin-top:2px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2c3e50;color:white;padding:11px 22px;border-radius:50px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <button class="back-btn" onclick="goBack()">&#x2190;</button>
+    <div>
+      <div class="hdr-title">&#x2615; Live Order</div>
+      <div class="hdr-sub" id="orderNumHdr">Loading...</div>
+    </div>
+  </div>
+  <button class="add-btn-hdr" id="addMoreHdrBtn" onclick="addMoreItems()" style="display:none">
+    &#x2795; Add Items
+  </button>
+</div>
+
+<div class="content">
+
+  <!-- LIVE STATUS CARD -->
+  <div class="live-card">
+    <div class="live-badge"><span class="live-dot"></span> Live</div>
+    <div class="live-order-num" id="orderNum">Order #...</div>
+    <span class="live-icon" id="liveIcon">&#x23F3;</span>
+    <div class="live-title" id="liveTitle">Loading...</div>
+    <div class="live-desc" id="liveDesc">Please wait...</div>
+
+    <div class="prog">
+      <div class="pg-step" id="pg-pending"><div class="pg-dot">&#x1F4CB;</div><div class="pg-lbl">Received</div></div>
+      <div class="pg-line" id="pl1"></div>
+      <div class="pg-step" id="pg-accepted"><div class="pg-dot">&#x2705;</div><div class="pg-lbl">Accepted</div></div>
+      <div class="pg-line" id="pl2"></div>
+      <div class="pg-step" id="pg-preparing"><div class="pg-dot">&#x1F468;&#x200D;&#x1F373;</div><div class="pg-lbl">Cooking</div></div>
+      <div class="pg-line" id="pl3"></div>
+      <div class="pg-step" id="pg-ready"><div class="pg-dot">&#x1F514;</div><div class="pg-lbl">Ready</div></div>
+      <div class="pg-line" id="pl4"></div>
+      <div class="pg-step" id="pg-completed"><div class="pg-dot">&#x1F389;</div><div class="pg-lbl">Done</div></div>
+    </div>
+
+    <div class="live-total">
+      <span class="lt-label">Bill Total</span>
+      <span class="lt-val" id="liveTot">&#x20B9;...</span>
+    </div>
+
+    <div class="actions" id="liveActions"></div>
+  </div>
+
+  <!-- CUSTOMER CARD -->
+  <div class="cust-card">
+    <div class="cust-av">&#x1F464;</div>
+    <div>
+      <div class="cust-name" id="custName">...</div>
+      <div class="cust-phone" id="custPhone">...</div>
+    </div>
+  </div>
+
+  <!-- ALL ORDER ITEMS -->
+  <div id="allItemsContainer"></div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── READ SESSION STORAGE ──────────────────────────────────────
+var ORDER_ID  = null;
+var TABLE_ID  = null;
+try {
+  ORDER_ID = parseInt(sessionStorage.getItem('bc_live_order')) || null;
+  TABLE_ID = sessionStorage.getItem('bc_table_id') || null;
+  if(TABLE_ID === 'null' || TABLE_ID === '') TABLE_ID = null;
+} catch(e){}
+
+// Customer details from cookies / DOM (passed via sessionStorage key)
+var CUST_NAME  = '';
+var CUST_PHONE = '';
+try {
+  CUST_NAME  = sessionStorage.getItem('bc_cust_name')  || '';
+  CUST_PHONE = sessionStorage.getItem('bc_cust_phone') || '';
+} catch(e){}
+
+var STATUS_CFG = {
+  pending:   {icon:'⏳', title:'Order Received!',  desc:'Your order is waiting to be accepted by our staff.'},
+  accepted:  {icon:'✅', title:'Order Accepted!',  desc:'Great! Our team has accepted your order.'},
+  preparing: {icon:'👨‍🍳',title:'Being Prepared!', desc:'Our chef is working on your delicious food!'},
+  ready:     {icon:'🔔', title:'Ready to Serve!',  desc:'Your order is ready! Staff will bring it shortly.'},
+  completed: {icon:'🎉', title:'Bill Ready!',      desc:'Your order is complete. Tap below to view your bill.'},
+  cancelled: {icon:'❌', title:'Order Cancelled',  desc:'Your order was cancelled by staff.'},
+};
+var STATUS_ORDER = ['pending','accepted','preparing','ready','completed'];
+var currentStatus = '';
+var allCompleted  = false;
+
+// ── BACK BUTTON ───────────────────────────────────────────────
+// Back goes to items page (not cart, not categories)
+function goBack(){
+  var menuUrl = TABLE_ID ? '/table/'+TABLE_ID+'/menu/' : '/takeaway/';
+  window.location.href = menuUrl;
+}
+
+// Prevent accidental browser-back from leaving live order
+history.pushState({page:'live'},'','');
+window.addEventListener('popstate', function(){
+  history.pushState({page:'live'},'','');
+});
+
+// ── ADD MORE ITEMS ────────────────────────────────────────────
+function addMoreItems(){
+  // Go to regular menu (not reorder) - active order will be detected automatically
+  // Cart will be empty for new items only, past items shown in live order card
+  var url = TABLE_ID
+    ? '/table/'+TABLE_ID+'/menu/'
+    : '/takeaway/';
+  window.location.href = url;
+}
+
+// ── UPDATE PROGRESS ───────────────────────────────────────────
+function updateProgress(status){
+  var idx = STATUS_ORDER.indexOf(status);
+  STATUS_ORDER.forEach(function(s,i){
+    var el = document.getElementById('pg-'+s); if(!el) return;
+    el.classList.remove('done','active');
+    if(i < idx) el.classList.add('done');
+    else if(i === idx) el.classList.add('active');
+  });
+  [1,2,3,4].forEach(function(n){
+    var l = document.getElementById('pl'+n);
+    if(l) l.classList.toggle('done', idx>=n);
+  });
+}
+
+function updateUI(data){
+  var status = data.status || 'pending';
+  var cfg = STATUS_CFG[status] || STATUS_CFG.pending;
+  document.getElementById('liveIcon').textContent  = cfg.icon;
+  document.getElementById('liveTitle').textContent = cfg.title;
+  document.getElementById('liveDesc').textContent  = cfg.desc;
+  updateProgress(status);
+  if(data.combined_total !== undefined)
+    document.getElementById('liveTot').textContent = '₹'+parseFloat(data.combined_total).toFixed(0);
+
+  // Actions
+  var acts = document.getElementById('liveActions');
+  var addBtn = document.getElementById('addMoreHdrBtn');
+  acts.innerHTML = '';
+  addBtn.style.display = 'none';
+
+  if(status === 'cancelled'){
+    acts.innerHTML = '<button class="act-btn btn-home" onclick="goBack()">&#x1F4CB; Go to Menu</button>';
+  } else if(data.all_completed){
+    acts.innerHTML = '<a class="act-btn btn-bill" href="/order/'+ORDER_ID+'/bill/">&#x1F9FE; View Bill &amp; Pay</a>';
+    allCompleted = true;
+  } else {
+    addBtn.style.display = 'flex';
+    acts.innerHTML = '<button class="act-btn btn-add" onclick="addMoreItems()">&#x2795; Add More Items</button>';
+  }
+  currentStatus = status;
+}
+
+// ── RENDER ORDER ITEMS ────────────────────────────────────────
+function renderItems(orders_data){
+  var container = document.getElementById('allItemsContainer');
+  if(!orders_data || !orders_data.length){ container.innerHTML=''; return; }
+  container.innerHTML = orders_data.map(function(ord, idx){
+    var isExtra = idx > 0;
+    var label = isExtra ? '&#x2795; Extra Order #'+(idx) : '&#x1F6D2; Your Order';
+    var rows = ord.items.map(function(item){
+      return '<div class="ic-row">'
+        +'<span class="ic-name">'+item.qty+'&#xD7; '+item.name+(isExtra?'<span class="extra-badge">Extra</span>':'')+'</span>'
+        +'<span class="ic-price">&#x20B9;'+item.total+'</span>'
+        +'</div>';
+    }).join('');
+    return '<div class="items-card">'
+      +'<div class="ic-title">'+label+'</div>'
+      +rows
+      +'<div class="total-row"><span>Total</span><span>&#x20B9;'+ord.total+'</span></div>'
+      +'</div>';
+  }).join('');
+}
+
+// ── FETCH ORDER DATA ──────────────────────────────────────────
+async function fetchOrder(){
+  if(!ORDER_ID){ showError(); return; }
+  try{
+    var resp = await fetch('/live-order/data/?order_id='+ORDER_ID, {headers:{'X-Requested-With':'XMLHttpRequest'}});
+    var data = await resp.json();
+    if(data.error){ showError(); return; }
+
+    // Update header
+    document.getElementById('orderNum').textContent = 'Order #'+data.order_number;
+    document.getElementById('orderNumHdr').textContent = '#'+data.order_number;
+
+    // Customer
+    if(data.customer_name){
+      document.getElementById('custName').textContent  = data.customer_name;
+      document.getElementById('custPhone').textContent = data.customer_phone || '';
+    }
+
+    updateUI(data);
+    renderItems(data.orders);
+
+    // If newly completed, reload to refresh bill link
+    if(data.all_completed && !allCompleted){
+      setTimeout(function(){ location.reload(); }, 1000);
+    }
+  } catch(e){ console.error(e); }
+}
+
+function showError(){
+  document.getElementById('liveTitle').textContent = 'Order not found';
+  document.getElementById('liveDesc').textContent  = 'Please scan the QR code again.';
+  document.getElementById('liveIcon').textContent  = '❓';
+}
+
+// Toast
+function showToast(msg, type){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+fetchOrder();
+setInterval(fetchOrder, 5000);
+</script>
+</body>
+</html>

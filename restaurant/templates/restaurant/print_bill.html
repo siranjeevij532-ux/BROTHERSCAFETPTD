@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Print Bill - {{ root_order.order_number }}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    background: white;
+    color: #000;
+    width: 80mm;
+    margin: 0 auto;
+    padding: 6px 4px 20px 4px;
+  }
+  .center { text-align: center; }
+  .bold { font-weight: bold; }
+  .big { font-size: 16px; font-weight: bold; }
+  .dashed { border-top: 1px dashed #000; margin: 6px 0; }
+  .solid { border-top: 2px solid #000; margin: 6px 0; }
+  .row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .row .name { flex: 1; padding-right: 6px; word-break: break-word; }
+  .row .qty { width: 28px; text-align: center; flex-shrink: 0; }
+  .row .price { width: 60px; text-align: right; flex-shrink: 0; }
+  .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; padding: 3px 0; }
+  .thank { font-size: 12px; margin-top: 8px; }
+  .badge { display: inline-block; border: 1px solid #000; padding: 1px 6px; border-radius: 3px; font-size: 11px; margin: 2px 0; }
+  @media print {
+    body { width: 80mm; margin: 0; }
+    .no-print { display: none !important; }
+    @page { margin: 0; size: 80mm auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NO-PRINT CONTROLS -->
+<div class="no-print" style="background:#1a1a2e;color:white;padding:10px;text-align:center;margin-bottom:10px;border-radius:6px;">
+  <strong>🖨️ Thermal Print Preview</strong><br>
+  <small>Click <strong>Print</strong> to send to printer &nbsp;|&nbsp; Port: USB/Thermal</small><br>
+  <button onclick="window.print()" style="margin-top:8px;background:#27ae60;color:white;border:none;padding:8px 22px;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">🖨️ Print Now</button>
+  &nbsp;
+  <button onclick="window.close()" style="margin-top:8px;background:#e74c3c;color:white;border:none;padding:8px 16px;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">✕ Close</button>
+</div>
+
+<!-- RECEIPT -->
+<div class="center">
+  <div class="big">☕ {{ shop.shop_name|default:"Brothers Cafe" }}</div>
+  {% if shop.address %}<div style="font-size:11px;">{{ shop.address }}</div>{% endif %}
+  {% if shop.location %}<div style="font-size:11px;">{{ shop.location }}</div>{% endif %}
+  {% if shop.phone %}<div style="font-size:11px;">Ph: {{ shop.phone }}</div>{% endif %}
+  {% if shop.gstin %}<div style="font-size:11px;">GSTIN: {{ shop.gstin }}</div>{% endif %}
+</div>
+
+<div class="dashed"></div>
+
+<div class="center">
+  <div class="bold">BILL / RECEIPT</div>
+  <div>Order #{{ root_order.order_number }}</div>
+  <div style="font-size:11px;">{{ root_order.created_at|date:"d-m-Y H:i" }}</div>
+</div>
+
+<div class="dashed"></div>
+
+<div class="row">
+  <span class="bold">Customer:</span>
+  <span>{{ root_order.customer_name }}</span>
+</div>
+<div class="row">
+  <span class="bold">Phone:</span>
+  <span>{{ root_order.customer_phone }}</span>
+</div>
+{% if root_order.table %}
+<div class="row">
+  <span class="bold">Table:</span>
+  <span>{% if root_order.table %}Dine In{% else %}Takeaway{% endif %}</span>
+</div>
+{% else %}
+<div class="row">
+  <span class="bold">Type:</span>
+  <span>🏠 Takeaway</span>
+</div>
+{% endif %}
+
+<div class="dashed"></div>
+
+<!-- ITEMS HEADER -->
+<div class="row bold" style="border-bottom:1px solid #000;padding-bottom:3px;">
+  <span class="name">Item</span>
+  <span class="qty">Qty</span>
+  <span class="price">Amount</span>
+</div>
+
+{% for item in combined_items %}
+<div class="row">
+  <span class="name">{{ item.name }}</span>
+  <span class="qty">{{ item.quantity }}</span>
+  <span class="price">₹{{ item.total_price }}</span>
+</div>
+{% endfor %}
+
+<div class="dashed"></div>
+
+<!-- TOTALS -->
+<div class="row">
+  <span>Subtotal</span>
+  <span>₹{{ combined_subtotal }}</span>
+</div>
+{% if discount_percent and discount_percent > 0 %}
+<div class="row">
+  <span>Discount ({{ discount_percent }}%)</span>
+  <span>-₹{{ discount_amount }}</span>
+</div>
+{% endif %}
+
+<div class="solid"></div>
+<div class="total-row">
+  <span>TOTAL</span>
+  <span>₹{{ combined_total }}</span>
+</div>
+<div class="solid"></div>
+
+<!-- PAYMENT -->
+<div class="row" style="margin-top:4px;">
+  <span class="bold">Payment:</span>
+  <span>
+    {% if order.payment_status == 'paid_offline' %}💵 Cash / Counter
+    {% elif order.payment_status == 'paid_online' %}📱 UPI / Online
+    {% elif order.payment_status == 'online_pending' %}⏳ Online Pending
+    {% else %}⬜ Unpaid
+    {% endif %}
+  </span>
+</div>
+
+{% if all_orders|length > 1 %}
+<div class="dashed"></div>
+<div class="center" style="font-size:11px;">
+  <div class="bold">Order Breakdown</div>
+  {% for o in all_orders %}
+  <div>{{ o.order_number }}{% if o.parent_order %} (Reorder){% endif %}: ₹{{ o.total_amount }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="dashed"></div>
+
+<div class="center thank">
+  <div class="bold">Thank You!</div>
+  <div>Visit Again 😊</div>
+  <div style="font-size:10px;margin-top:4px;">Brothers Cafe · Powered by ☕</div>
+</div>
+
+<script>
+  // Auto-print when opened from staff portal
+  window.onload = function() {
+    var auto = new URLSearchParams(window.location.search).get('auto');
+    if (auto === '1') {
+      setTimeout(function(){ window.print(); }, 500);
+    }
+  };
+</script>
+</body>
+</html>

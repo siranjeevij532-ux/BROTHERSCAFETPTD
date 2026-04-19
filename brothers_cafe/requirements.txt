@@ -1,0 +1,9 @@
+Django>=4.2
+Pillow>=9.0
+openpyxl>=3.0
+reportlab>=3.6
+qrcode>=7.3
+whitenoise>=6.0
+gunicorn>=21.0
+dj-database-url>=2.0
+psycopg2-binary>=2.9

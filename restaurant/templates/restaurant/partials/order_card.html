@@ -1,0 +1,40 @@
+<div class="order-card {{ order.status }}" id="order-{{ order.id }}">
+    <div class="order-header">
+        <div>
+            <div class="order-num">#{{ order.order_number }}</div>
+            <div class="order-time">{{ order.created_at|timesince }} ago</div>
+        </div>
+        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;
+            background:{% if order.status == 'pending' %}rgba(231,76,60,0.2){% elif order.status == 'accepted' %}rgba(52,152,219,0.2){% elif order.status == 'preparing' %}rgba(155,89,182,0.2){% else %}rgba(39,174,96,0.2){% endif %};
+            color:{% if order.status == 'pending' %}#e74c3c{% elif order.status == 'accepted' %}#3498db{% elif order.status == 'preparing' %}#9b59b6{% else %}#27ae60{% endif %}">
+            {{ order.get_status_display|upper }}
+        </span>
+    </div>
+    <div class="order-customer">👤 {{ order.customer_name }} · 📞 {{ order.customer_phone }}</div>
+    <div class="order-table">🪑 {{ order.table }}</div>
+    
+    <div class="order-items">
+        {% for item in order.items.all %}
+        <div class="order-item-line">{{ item.quantity }}× {{ item.menu_item.name }} <span style="color:#e74c3c">₹{{ item.total_price }}</span></div>
+        {% endfor %}
+    </div>
+    
+    {% if order.special_instructions %}
+    <div class="order-special">📝 {{ order.special_instructions }}</div>
+    {% endif %}
+    
+    <div class="order-total">₹{{ order.total_amount }}</div>
+    
+    <div class="action-buttons">
+        {% if order.status == 'pending' %}
+        <button class="act-btn btn-accept" onclick="updateStatus({{ order.id }}, 'accepted')">✅ Accept</button>
+        <button class="act-btn btn-cancel" onclick="updateStatus({{ order.id }}, 'cancelled')">✕ Cancel</button>
+        {% elif order.status == 'accepted' %}
+        <button class="act-btn btn-prepare" onclick="updateStatus({{ order.id }}, 'preparing')">👨‍🍳 Preparing</button>
+        {% elif order.status == 'preparing' %}
+        <button class="act-btn btn-ready" onclick="updateStatus({{ order.id }}, 'ready')">🔔 Mark Ready</button>
+        {% elif order.status == 'ready' %}
+        <button class="act-btn btn-complete" onclick="updateStatus({{ order.id }}, 'completed')">✅ Complete & Bill</button>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,120 @@
+{% extends 'restaurant/base.html' %}
+{% block title %}Brothers Cafe - Order{% endblock %}
+{% block extra_css %}
+<style>
+.hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh; padding: 40px 20px; display: flex;
+    flex-direction: column; align-items: center;
+}
+.logo-area { text-align: center; margin-bottom: 50px; }
+.cafe-logo { width: 100px; height: 100px; background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 40px; margin: 0 auto 15px; box-shadow: 0 0 30px rgba(231,76,60,0.5); }
+.cafe-name { font-size: 36px; font-weight: 800; color: white; letter-spacing: 2px; }
+.cafe-sub { color: rgba(255,255,255,0.6); font-size: 14px; letter-spacing: 4px; text-transform: uppercase; }
+.section-title { color: white; font-size: 22px; font-weight: 600; margin-bottom: 30px; text-align: center; }
+.section-title span { color: #e74c3c; }
+.tables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px; width: 100%; max-width: 900px; }
+.table-card {
+    background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.1); border-radius: 20px;
+    padding: 30px 20px; text-align: center; cursor: pointer;
+    transition: all 0.3s; color: white; text-decoration: none;
+    position: relative; overflow: hidden;
+}
+.table-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 4px; background: var(--color, #e74c3c);
+}
+.table-card:hover { transform: translateY(-8px); border-color: rgba(231,76,60,0.5);
+    box-shadow: 0 15px 40px rgba(231,76,60,0.3); }
+.table-card.occupied { opacity: 0.85; }
+.table-card.occupied::before { background: #e74c3c; }
+.table-card.available::before { background: #27ae60; }
+.table-icon { font-size: 48px; margin-bottom: 12px; }
+.table-number { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+.table-name { font-size: 14px; opacity: 0.8; margin-bottom: 10px; }
+.table-capacity { font-size: 12px; opacity: 0.6; }
+.table-status-badge {
+    position: absolute; top: 15px; right: 15px;
+    padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700;
+}
+.status-available { background: rgba(39,174,96,0.2); color: #27ae60; border: 1px solid #27ae60; }
+.status-occupied { background: rgba(231,76,60,0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+.status-reserved { background: rgba(243,156,18,0.2); color: #f39c12; border: 1px solid #f39c12; }
+.legend { display: flex; gap: 20px; margin-top: 30px; }
+.legend-item { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.7); font-size: 13px; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+/* Takeaway */
+.tw-banner{width:100%;max-width:900px;margin-bottom:28px;}
+.tw-card{background:linear-gradient(135deg,#e74c3c,#c0392b);border-radius:20px;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;transition:.25s;box-shadow:0 8px 30px rgba(231,76,60,0.4);}
+.tw-card:hover{transform:translateY(-4px);box-shadow:0 14px 40px rgba(231,76,60,0.55);}
+.tw-left{display:flex;align-items:center;gap:16px;}
+.tw-icon{font-size:42px;}
+.tw-title{font-size:20px;font-weight:800;color:white;}
+.tw-sub{font-size:13px;color:rgba(255,255,255,0.75);margin-top:3px;}
+.tw-arrow{font-size:28px;color:rgba(255,255,255,0.8);}
+</style>
+{% endblock %}
+{% block content %}
+<div class="hero">
+    <div class="logo-area">
+        <div class="cafe-logo">☕</div>
+        <div class="cafe-name">{{ shop.shop_name|default:"Brothers Cafe" }}</div>
+        <div class="cafe-sub">{{ shop.location|default:"Tirupattur" }} · Est. 2024</div>
+    </div>
+    
+    <div class="section-title">&#x1F3E0; Order Options</div>
+    <div style="width:100%;max-width:900px;margin-bottom:26px;">
+        <a href="/takeaway/" style="background:linear-gradient(135deg,#e74c3c,#c0392b);border-radius:18px;padding:20px 26px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;box-shadow:0 8px 28px rgba(231,76,60,.4);">
+            <div style="display:flex;align-items:center;gap:14px;">
+                <span style="font-size:40px;">&#x1F6CD;&#xFE0F;</span>
+                <div>
+                    <div style="font-size:20px;font-weight:800;color:white;">Home Takeaway</div>
+                    <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:3px;">Order &amp; pick up &mdash; no table needed</div>
+                </div>
+            </div>
+            <span style="font-size:26px;color:rgba(255,255,255,.8);">&#x2192;</span>
+        </a>
+    </div>
+    <div class="section-title">&mdash; Or Dine In &mdash; Choose <span>Table</span></div>
+    
+    <div class="tables-grid">
+        {% for table in tables %}
+        <a href="{% url 'menu' table.id %}"
+           class="table-card {{ table.status }}"
+           style="--color: {% if table.status == 'available' %}#27ae60{% elif table.status == 'occupied' %}#e74c3c{% else %}#f39c12{% endif %}">
+            <span class="table-status-badge status-{{ table.status }}">
+                {{ table.get_status_display }}
+            </span>
+            <div class="table-icon">
+                {% if table.status == 'available' %}🪑{% elif table.status == 'occupied' %}🍽️{% else %}🔒{% endif %}
+            </div>
+            <div class="table-number">{{ table.number }}</div>
+            <div class="table-name">{{ table.name }}</div>
+            <div class="table-capacity"><i class="fas fa-users"></i> {{ table.capacity }} Seats</div>
+            {% if table.description %}
+            <div style="font-size:11px;opacity:0.5;margin-top:5px">{{ table.description }}</div>
+            {% endif %}
+        </a>
+        {% empty %}
+        <div style="color:rgba(255,255,255,0.5);text-align:center;grid-column:1/-1;padding:40px">
+            <i class="fas fa-chair" style="font-size:48px;margin-bottom:15px;display:block"></i>
+            No tables configured. Please add tables in admin panel.
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#27ae60"></div> Available</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e74c3c"></div> Occupied</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f39c12"></div> Reserved</div>
+    </div>
+    
+    <div style="color:rgba(255,255,255,0.3);font-size:12px;margin-top:30px;text-align:center">
+        GSTIN: {{ shop.gstin|default:"23278537256752" }}
+    </div>
+</div>
+{% endblock %}

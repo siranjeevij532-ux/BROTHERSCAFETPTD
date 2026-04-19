@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Brothers Cafe</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  height:100%;width:100%;
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(160deg,#1a1a2e 0%,#0f3460 60%,#16213e 100%);
+  min-height:100vh;overflow-x:hidden;
+}
+.bg-c{position:fixed;border-radius:50%;pointer-events:none}
+.bg-c.a{width:320px;height:320px;top:-90px;right:-90px;background:rgba(231,76,60,0.08)}
+.bg-c.b{width:220px;height:220px;bottom:40px;left:-70px;background:rgba(52,152,219,0.07)}
+
+.wrap{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:30px 22px 50px;
+}
+
+/* LOGO */
+.logo-box{
+  width:82px;height:82px;
+  background:linear-gradient(135deg,#e74c3c,#c0392b);
+  border-radius:24px;display:flex;align-items:center;justify-content:center;
+  font-size:40px;margin:0 auto 14px;
+  box-shadow:0 8px 28px rgba(231,76,60,0.4);
+  animation:float 3s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.cafe-name{font-size:26px;font-weight:800;color:white;text-align:center;margin-bottom:3px}
+.cafe-loc{font-size:12px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:30px}
+
+/* CARD */
+.card{
+  background:white;border-radius:24px;padding:26px 22px 30px;
+  width:100%;max-width:400px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.35);
+}
+
+/* TABS */
+.tabs{display:flex;background:#f4f5f7;border-radius:12px;padding:3px;margin-bottom:24px;gap:3px}
+.tab{
+  flex:1;padding:10px;border:none;background:transparent;
+  font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;
+  border-radius:10px;cursor:pointer;color:#888;transition:0.2s;
+}
+.tab.active{background:white;color:#e74c3c;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+
+/* PANELS */
+.panel{display:none}.panel.active{display:block}
+
+/* FIELD */
+.field{margin-bottom:16px}
+.flabel{
+  font-size:11px;font-weight:600;color:#555;
+  text-transform:uppercase;letter-spacing:0.5px;
+  display:block;margin-bottom:6px;
+}
+.finput-wrap{position:relative;display:flex;align-items:center}
+.ficon{position:absolute;left:13px;font-size:17px;pointer-events:none}
+.finput{
+  width:100%;padding:14px 14px 14px 42px;
+  border:2px solid #e9ecef;border-radius:13px;
+  font-family:'Poppins',sans-serif;font-size:16px;color:#2c3e50;
+  background:#fafafa;transition:0.2s;-webkit-appearance:none;
+}
+.finput:focus{outline:none;border-color:#e74c3c;background:white;box-shadow:0 0 0 4px rgba(231,76,60,0.1)}
+.finput::placeholder{color:#bbb}
+
+/* ERROR / SUCCESS */
+.msg-box{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.msg-error{background:#fff5f5;border:1px solid #fecaca;color:#e74c3c}
+.msg-success{background:#f0fff4;border:1px solid #c6f6d5;color:#27ae60}
+
+/* BUTTON */
+.sbtn{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,#e74c3c,#c0392b);
+  color:white;border:none;border-radius:13px;
+  font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;transition:0.2s;
+  box-shadow:0 4px 18px rgba(231,76,60,0.38);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  -webkit-tap-highlight-color:transparent;
+}
+.sbtn:active{transform:scale(0.98)}
+.sbtn:disabled{opacity:0.65}
+
+/* DIVIDER */
+.divider{text-align:center;font-size:11px;color:#bbb;margin:14px 0}
+
+/* FEATURES */
+.feats{display:flex;gap:10px;margin-top:22px;justify-content:center}
+.feat{
+  background:rgba(255,255,255,0.06);border-radius:12px;
+  padding:10px 14px;text-align:center;flex:1;
+}
+.feat-i{font-size:20px;margin-bottom:3px}
+.feat-l{font-size:10px;color:rgba(255,255,255,0.45)}
+</style>
+</head>
+<body>
+<div class="bg-c a"></div>
+<div class="bg-c b"></div>
+
+<div class="wrap">
+  <div class="logo-box">☕</div>
+  <div class="cafe-name">Brothers Cafe</div>
+  <div class="cafe-loc">{{ shop.location|default:"Tirupattur" }} · Scan. Order. Enjoy.</div>
+
+  <div class="card">
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" id="tab-reg" onclick="switchTab('reg')">📝 Register</button>
+      <button class="tab" id="tab-login" onclick="switchTab('login')">🔑 Login</button>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div class="panel active" id="panel-reg">
+      {% if reg_error %}<div class="msg-box msg-error">⚠️ {{ reg_error }}</div>{% endif %}
+      <form method="POST" id="regForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="register">
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="field">
+          <label class="flabel" for="reg_name">Your Name</label>
+          <div class="finput-wrap">
+            <span class="ficon">👤</span>
+            <input type="text" id="reg_name" name="name" class="finput"
+              placeholder="e.g. Ravi Kumar" autocomplete="name" required
+              value="{{ reg_name|default:'' }}">
+          </div>
+        </div>
+        <div class="field">
+          <label class="flabel" for="reg_phone">Phone Number</label>
+          <div class="finput-wrap">
+            <span class="ficon">📱</span>
+            <input type="tel" id="reg_phone" name="phone" class="finput"
+              placeholder="e.g. 9876543210" autocomplete="tel"
+              inputmode="numeric" pattern="[0-9]{8,15}" required
+              value="{{ reg_phone|default:'' }}">
+          </div>
+        </div>
+        <button type="submit" class="sbtn" id="regBtn">🍽️ Register &amp; Start Ordering</button>
+      </form>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div class="panel" id="panel-login">
+      {% if login_error %}<div class="msg-box msg-error">⚠️ {{ login_error }}</div>{% endif %}
+      {% if login_success %}<div class="msg-box msg-success">✅ {{ login_success }}</div>{% endif %}
+      <form method="POST" id="loginForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="login">
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="field">
+          <label class="flabel" for="login_phone">Phone Number</label>
+          <div class="finput-wrap">
+            <span class="ficon">📱</span>
+            <input type="tel" id="login_phone" name="phone" class="finput"
+              placeholder="Enter registered phone" autocomplete="tel"
+              inputmode="numeric" pattern="[0-9]{8,15}" required
+              value="{{ login_phone|default:'' }}">
+          </div>
+        </div>
+        <button type="submit" class="sbtn" id="loginBtn">🔑 Login &amp; Continue</button>
+      </form>
+      <div class="divider">New customer? Use the Register tab ↑</div>
+    </div>
+  </div>
+
+  <div class="feats">
+    <div class="feat"><div class="feat-i">⚡</div><div class="feat-l">Quick Order</div></div>
+    <div class="feat"><div class="feat-i">📋</div><div class="feat-l">Track Order</div></div>
+    <div class="feat"><div class="feat-i">🕐</div><div class="feat-l">Order History</div></div>
+  </div>
+</div>
+
+<script>
+function switchTab(t) {
+  document.getElementById('panel-reg').classList.toggle('active', t==='reg');
+  document.getElementById('panel-login').classList.toggle('active', t==='login');
+  document.getElementById('tab-reg').classList.toggle('active', t==='reg');
+  document.getElementById('tab-login').classList.toggle('active', t==='login');
+  if(t==='reg') document.getElementById('reg_name').focus();
+  else document.getElementById('login_phone').focus();
+}
+// If login error, switch to login tab
+{% if login_error or login_phone %}switchTab('login');{% endif %}
+
+document.getElementById('regForm').addEventListener('submit',function(){
+  var b=document.getElementById('regBtn');b.disabled=true;b.textContent='⏳ Please wait...';
+});
+document.getElementById('loginForm').addEventListener('submit',function(){
+  var b=document.getElementById('loginBtn');b.disabled=true;b.textContent='⏳ Please wait...';
+});
+</script>
+</body>
+</html>

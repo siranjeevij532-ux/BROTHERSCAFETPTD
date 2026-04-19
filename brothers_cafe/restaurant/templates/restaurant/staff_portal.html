@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Portal - Brothers Cafe</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Poppins',sans-serif;background:#0f0f1a;color:#e0e0e0;}
+:root{--red:#e74c3c;--blue:#3498db;--purple:#9b59b6;--green:#27ae60;--orange:#f39c12;--teal:#1abc9c;--dark:#1a1a2e;}
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:215px;background:var(--dark);display:flex;flex-direction:column;position:fixed;height:100vh;overflow-y:auto;z-index:50;}
+.main{margin-left:215px;flex:1;}
+.sidebar-logo{padding:15px 18px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center;}
+.s-icon{font-size:26px;}
+.s-cafe{font-size:14px;font-weight:800;color:white;margin-top:4px;}
+.s-sub{font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:2px;}
+.s-user{font-size:11px;color:var(--red);margin-top:3px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:11px 17px;color:rgba(255,255,255,0.5);cursor:pointer;transition:.2s;border-left:3px solid transparent;font-size:12px;font-weight:500;text-decoration:none;}
+.nav-item:hover,.nav-item.active{color:white;background:rgba(231,76,60,0.1);border-left-color:var(--red);}
+.nav-icon{font-size:14px;width:18px;flex-shrink:0;}
+.nav-badge{background:var(--red);color:white;border-radius:50%;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;margin-left:auto;padding:0 3px;}
+.sb-exp{padding:8px 10px;}
+.exp-btn{display:flex;align-items:center;gap:7px;padding:9px 12px;border-radius:9px;font-size:11px;font-weight:600;text-decoration:none;margin-bottom:5px;transition:.2s;color:inherit;}
+.exp-btn:hover{opacity:.8;}
+.sb-footer{margin-top:auto;padding:10px;}
+.topbar{background:#16213e;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;border-bottom:1px solid rgba(255,255,255,0.05);}
+.topbar-title{font-size:16px;font-weight:700;color:white;}
+.clock{color:rgba(255,255,255,0.35);font-size:12px;}
+.content{padding:16px 20px;}
+.tab-content{display:none;}.tab-content.active{display:block;}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:18px;}
+.stat-card{background:var(--dark);border-radius:12px;padding:13px 15px;border:1px solid rgba(255,255,255,0.06);border-top:3px solid var(--c,var(--red));}
+.stat-label{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;}
+.stat-val{font-size:22px;font-weight:800;color:white;}
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start;}
+.kol{background:rgba(255,255,255,0.02);border-radius:13px;padding:11px;}
+.kol-hdr{display:flex;align-items:center;gap:7px;margin-bottom:11px;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.kol-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.kol-ttl{font-size:12px;font-weight:700;color:white;}
+.kol-cnt{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.55);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:auto;}
+.ocard{background:var(--dark);border-radius:11px;padding:13px;border:1px solid rgba(255,255,255,0.07);border-left:3px solid var(--red);margin-bottom:9px;transition:.15s;}
+.ocard:last-child{margin-bottom:0;}
+.ocard:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(0,0,0,0.28);}
+.ocard.s-accepted{border-left-color:var(--blue);}
+.ocard.s-preparing{border-left-color:var(--purple);}
+.ocard.s-ready{border-left-color:var(--green);}
+.oh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;}
+.onum{font-size:12px;font-weight:700;color:white;}
+.otime{font-size:10px;color:rgba(255,255,255,0.28);margin-top:1px;}
+.otyp{padding:2px 6px;border-radius:20px;font-size:9px;font-weight:700;white-space:nowrap;}
+.typ-dine{background:rgba(52,152,219,.18);color:var(--blue);}
+.typ-take{background:rgba(26,188,156,.18);color:var(--teal);}
+.ocust{font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px;}
+.otbl{font-size:10px;color:rgba(255,255,255,0.32);margin-bottom:7px;}
+.oitems-box{background:rgba(255,255,255,0.03);border-radius:7px;padding:6px 8px;margin-bottom:7px;}
+.oi{font-size:10px;color:rgba(255,255,255,0.58);padding:1px 0;display:flex;justify-content:space-between;}
+.ospnote{font-size:10px;color:var(--orange);background:rgba(243,156,18,.1);padding:4px 7px;border-radius:5px;margin-bottom:7px;}
+.ototl{font-size:14px;font-weight:700;color:var(--red);margin-bottom:9px;}
+.oacts{display:flex;gap:5px;flex-wrap:wrap;}
+.abtn{padding:7px 9px;border:none;border-radius:7px;font-family:'Poppins',sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:.15s;flex:1;min-width:60px;text-align:center;}
+.abtn:hover{transform:translateY(-1px);filter:brightness(1.1);}
+.a-accept{background:var(--blue);color:white;}
+.a-prepare{background:var(--purple);color:white;}
+.a-ready{background:var(--green);color:white;}
+.a-complete{background:#2c3e50;color:white;}
+.a-cancel{background:rgba(231,76,60,.15);color:var(--red);border:1px solid rgba(231,76,60,.25);}
+.tables-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:11px;}
+.ttile{background:var(--dark);border-radius:12px;padding:16px;text-align:center;border:2px solid rgba(255,255,255,0.07);}
+.ttile.available{border-color:var(--green);}
+.ttile.occupied{border-color:var(--red);}
+.ttile.reserved{border-color:var(--orange);}
+.ttnum{font-size:28px;font-weight:800;color:white;}
+.ttname{font-size:11px;color:rgba(255,255,255,0.38);margin-top:2px;}
+.ttstatus{display:inline-block;margin-top:6px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;}
+.ts-available{background:rgba(39,174,96,.18);color:var(--green);}
+.ts-occupied{background:rgba(231,76,60,.18);color:var(--red);}
+.ts-reserved{background:rgba(243,156,18,.18);color:var(--orange);}
+.ttorder{font-size:9px;color:rgba(255,255,255,0.22);margin-top:5px;line-height:1.4;}
+.comp-list{display:flex;flex-direction:column;gap:8px;}
+.crow{background:var(--dark);border-radius:11px;padding:11px 15px;display:flex;align-items:center;gap:11px;border:1px solid rgba(255,255,255,0.06);}
+.cbadge{background:rgba(39,174,96,.13);color:var(--green);border-radius:7px;padding:4px 8px;font-size:10px;font-weight:700;white-space:nowrap;}
+.cinfo{flex:1;min-width:0;}
+.cnum{font-size:12px;font-weight:700;color:white;}
+.ccust{font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;}
+.citems{font-size:10px;color:rgba(255,255,255,0.22);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cright{text-align:right;flex-shrink:0;}
+.ctotal{font-size:14px;font-weight:700;color:var(--red);}
+.cpay{font-size:10px;color:rgba(255,255,255,0.28);margin-top:1px;}
+.ept{text-align:center;padding:25px 10px;color:rgba(255,255,255,0.18);}
+.ept-icon{font-size:32px;margin-bottom:6px;}
+.ept-txt{font-size:11px;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:none;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.notif-card{background:var(--dark);border-radius:20px;padding:28px;text-align:center;max-width:370px;width:92%;border:2px solid var(--red);animation:bIn .4s;}
+@keyframes bIn{from{transform:scale(.65);opacity:0}to{transform:scale(1);opacity:1}}
+.nring{font-size:50px;margin-bottom:8px;display:block;animation:shake .35s infinite;}
+@keyframes shake{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.pulse-orange{animation:pulseO 0.6s infinite;}
+@keyframes pulseO{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.ntitle{font-size:19px;font-weight:800;color:white;margin-bottom:5px;}
+.nbody{color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:16px;line-height:1.65;}
+.n-dismiss{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);border:none;padding:9px 22px;border-radius:50px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+.n-dismiss:hover{background:rgba(255,255,255,0.14);}
+.n-note{font-size:10px;color:rgba(255,255,255,0.28);margin-top:10px;}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:none;align-items:center;justify-content:center;}
+.modal-ov.show{display:flex;}
+.mcard{background:var(--dark);border-radius:15px;padding:22px;width:370px;max-width:94vw;border:1px solid rgba(255,255,255,0.1);}
+.mtitle{font-size:14px;font-weight:700;color:white;margin-bottom:13px;}
+.mlabel{font-size:10px;color:rgba(255,255,255,0.4);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+.msel{width:100%;padding:10px 11px;background:#0a0a15;color:white;border:1px solid rgba(255,255,255,0.12);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;margin-bottom:11px;}
+.msel:focus{outline:none;border-color:var(--red);}
+.mbtns{display:flex;gap:7px;margin-top:3px;}
+.toast{position:fixed;top:14px;right:14px;z-index:9998;background:#1e2235;color:white;padding:11px 15px;border-radius:10px;box-shadow:0 5px 24px rgba(0,0,0,0.44);display:none;font-size:12px;font-weight:500;max-width:270px;}
+.toast.show{display:block;animation:sR .3s ease;}
+@keyframes sR{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast.success{border-left:3px solid var(--green);}
+.toast.error{border-left:3px solid var(--red);}
+.export-panel{background:var(--dark);border-radius:13px;padding:20px;border:1px solid rgba(255,255,255,0.07);}
+.period-btn{padding:7px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.45);font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:.18s;}
+.period-btn.active,.period-btn:hover{background:var(--red);color:white;border-color:var(--red);}
+.elink{display:block;text-decoration:none;}
+.sec-title{font-size:14px;font-weight:700;color:white;margin-bottom:13px;}
+.elink{display:inline-flex;align-items:center;gap:7px;padding:11px 18px;border-radius:9px;text-decoration:none;font-weight:600;font-size:12px;transition:.2s;margin-right:8px;margin-bottom:8px;}
+.elink:hover{opacity:.85;transform:translateY(-1px);}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+
+<!-- REORDER NOTIFICATION -->
+<div class="overlay" id="reorderOverlay">
+  <div class="notif-card" style="border-color:#e67e22;">
+    <span class="nring" style="animation:none;font-size:44px;">&#x1F4E6;</span>
+    <div class="ntitle" style="color:#e67e22;">Customer Added More Items!</div>
+    <div class="nbody" id="reorderBody">Loading...</div>
+    <button class="n-dismiss" style="background:rgba(230,126,34,.15);color:#e67e22;" onclick="closeReorderNotif()">&#x2715; Dismiss &amp; View</button>
+    <div class="n-note">&#x1F514; This reorder has been added to their bill automatically</div>
+  </div>
+</div>
+
+<!-- NEW ORDER NOTIFICATION -->
+<div class="overlay" id="notifOverlay">
+  <div class="notif-card">
+    <span class="nring">&#x1F514;</span>
+    <div class="ntitle">New Order!</div>
+    <div class="nbody" id="notifBody">Loading...</div>
+    <button class="n-dismiss" onclick="closeNotif()">&#x2715; Dismiss &amp; View</button>
+    <div class="n-note">&#x26A0; Sound stops only when you click <strong style="color:white">Accept</strong></div>
+  </div>
+</div>
+
+<!-- COMPLETE ORDER MODAL -->
+<div class="modal-ov" id="completeModal">
+  <div class="mcard">
+    <div class="mtitle">&#x2705; Complete Order &amp; Generate Bill</div>
+    <label class="mlabel">Apply Discount</label>
+    <select class="msel" id="mDiscount">
+      <option value="0">No Discount</option>
+      {% for d in discounts %}
+      <option value="{{ d.percent }}">{{ d.name }} &mdash; {{ d.percent }}%</option>
+      {% endfor %}
+    </select>
+    <label class="mlabel">Payment Method</label>
+    <select class="msel" id="mPayment">
+      <option value="offline">&#x1F4B5; Cash / Pay at Counter</option>
+      <option value="online">&#x1F4F1; UPI / Online</option>
+    </select>
+    <div class="mbtns">
+      <button class="abtn a-complete" style="padding:10px;font-size:11px;" onclick="confirmComplete()">&#x2705; Confirm Complete</button>
+      <button class="abtn a-cancel" style="padding:10px 12px;font-size:11px;flex:0 0 auto;" onclick="document.getElementById('completeModal').classList.remove('show')">&#x2715;</button>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="s-icon">&#x2615;</div>
+      <div class="s-cafe">Brothers Cafe</div>
+      <div class="s-sub">STAFF PORTAL</div>
+      <div class="s-user">&#x1F464; {{ request.user.username }}</div>
+    </div>
+    <a class="nav-item active" id="nav-orders" onclick="goTab('orders',this);return false;" href="#">
+      <span class="nav-icon">&#x1F4CB;</span> Orders
+      <span class="nav-badge" id="pendingBadge">{{ pending_orders.count }}</span>
+    </a>
+    <a class="nav-item" id="nav-tables" onclick="goTab('tables',this);return false;" href="#">
+      <span class="nav-icon">&#x1FA91;</span> Tables
+    </a>
+    <a class="nav-item" id="nav-completed" onclick="goTab('completed',this);return false;" href="#">
+      <span class="nav-icon">&#x2705;</span> Completed
+    </a>
+    <a class="nav-item" id="nav-stats" onclick="goTab('stats',this);return false;" href="#">
+      <span class="nav-icon">&#x1F4CA;</span> Stats &amp; Export
+    </a>
+    <div class="sb-exp">
+      <a href="{% url 'export_daily_excel' %}" class="exp-btn" style="background:rgba(39,174,96,.12);color:#2ecc71;" target="_blank">&#x1F4C5; Today Excel</a>
+      <a href="{% url 'export_excel' %}" class="exp-btn" style="background:rgba(52,152,219,.12);color:#5dade2;" target="_blank">&#x1F4CA; All Orders Excel</a>
+      <a href="{% url 'download_qr_codes' %}" class="exp-btn" style="background:rgba(155,89,182,.12);color:#bb8fce;" target="_blank">&#x1F4F1; QR Codes</a>
+    </div>
+    <div class="sb-footer">
+      <a href="{% url 'staff_logout' %}" class="exp-btn" style="background:rgba(231,76,60,.12);color:var(--red);">&#x1F6AA; Logout</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">&#x1F4CB; Orders</div>
+      <div class="clock" id="clock"></div>
+    </div>
+    <div class="content">
+
+      <!-- ORDERS TAB -->
+      <div class="tab-content active" id="tab-orders">
+        <div class="stats-row">
+          <div class="stat-card" style="--c:var(--red)"><div class="stat-label">&#x1F534; Pending</div><div class="stat-val">{{ pending_orders.count }}</div></div>
+          <div class="stat-card" style="--c:var(--blue)"><div class="stat-label">&#x1F535; Accepted</div><div class="stat-val">{{ accepted_orders.count }}</div></div>
+          <div class="stat-card" style="--c:var(--purple)"><div class="stat-label">&#x1F7E3; Cooking</div><div class="stat-val">{{ cooking_orders.count }}</div></div>
+          <div class="stat-card" style="--c:var(--green)"><div class="stat-label">&#x1F7E2; Ready</div><div class="stat-val">{{ ready_orders.count }}</div></div>
+          <div class="stat-card" style="--c:#f1c40f"><div class="stat-label">&#x1F4B0; Revenue</div><div class="stat-val" style="font-size:17px">&#8377;{{ today_revenue }}</div></div>
+        </div>
+
+        <div class="kanban">
+          <!-- PENDING -->
+          <div class="kol">
+            <div class="kol-hdr">
+              <div class="kol-dot" style="background:var(--red)"></div>
+              <div class="kol-ttl">&#x1F534; Pending</div>
+              <div class="kol-cnt">{{ pending_orders.count }}</div>
+            </div>
+            {% for order in pending_orders %}
+            <div class="ocard">
+              <div class="oh">
+                <div><div class="onum">#{{ order.order_number }}</div><div class="otime">{{ order.created_at|timesince }} ago</div></div>
+                {% if order.order_type == 'takeaway' %}<span class="otyp typ-take">&#x1F3E0; TAKEAWAY</span>{% else %}<span class="otyp typ-dine">&#x1FA91; DINE IN</span>{% endif %}
+              </div>
+              <div class="ocust">&#x1F464; {{ order.customer_name }} &nbsp;&#x1F4DE; {{ order.customer_phone }}</div>
+              <div class="otbl">{% if order.table %}&#x1FA91; {{ order.table }}{% else %}&#x1F3E0; Takeaway Order{% endif %}</div>
+              <div class="oitems-box">{% for item in order.items.all %}<div class="oi"><span>{{ item.quantity }}&times; {{ item.menu_item.name }}</span><span style="color:var(--red)">&#8377;{{ item.total_price }}</span></div>{% endfor %}</div>
+              {% if order.special_instructions %}<div class="ospnote">&#x1F4DD; {{ order.special_instructions }}</div>{% endif %}
+              <div class="ototl">&#8377;{{ order.total_amount }}</div>
+              <div class="oacts">
+                <button class="abtn a-accept" onclick="doAccept({{ order.id }})">&#x2705; Accept</button>
+                <button class="abtn a-cancel" onclick="doStatus({{ order.id }},'cancelled')">&#x2715;</button>
+              </div>
+              <div style="margin-top:5px;">
+                <button class="abtn" style="background:rgba(155,89,182,.18);color:#9b59b6;border:1px solid rgba(155,89,182,.3);font-size:10px;" onclick="printBill({{ order.id }})">&#x1F5A8; Print Bill</button>
+              </div>
+            </div>
+            {% empty %}<div class="ept"><div class="ept-icon">&#x1F60A;</div><div class="ept-txt">No pending orders</div></div>{% endfor %}
+          </div>
+
+          <!-- ACCEPTED -->
+          <div class="kol">
+            <div class="kol-hdr">
+              <div class="kol-dot" style="background:var(--blue)"></div>
+              <div class="kol-ttl">&#x1F535; Accepted</div>
+              <div class="kol-cnt">{{ accepted_orders.count }}</div>
+            </div>
+            {% for order in accepted_orders %}
+            <div class="ocard s-accepted">
+              <div class="oh">
+                <div><div class="onum">#{{ order.order_number }}</div><div class="otime">{{ order.created_at|timesince }} ago</div></div>
+                {% if order.order_type == 'takeaway' %}<span class="otyp typ-take">&#x1F3E0;</span>{% endif %}
+              </div>
+              <div class="ocust">&#x1F464; {{ order.customer_name }}</div>
+              <div class="otbl">{% if order.table %}&#x1FA91; {{ order.table }}{% else %}&#x1F3E0; Takeaway{% endif %}</div>
+              <div class="oitems-box">{% for item in order.items.all %}<div class="oi"><span>{{ item.quantity }}&times; {{ item.menu_item.name }}</span><span style="color:var(--red)">&#8377;{{ item.total_price }}</span></div>{% endfor %}</div>
+              {% if order.special_instructions %}<div class="ospnote">&#x1F4DD; {{ order.special_instructions }}</div>{% endif %}
+              <div class="ototl">&#8377;{{ order.total_amount }}</div>
+              <div class="oacts"><button class="abtn a-prepare" onclick="doStatus({{ order.id }},'preparing')">&#x1F373; Start Cooking</button></div>
+              <div style="margin-top:5px;">
+                <button class="abtn" style="background:rgba(155,89,182,.18);color:#9b59b6;border:1px solid rgba(155,89,182,.3);font-size:10px;" onclick="printBill({{ order.id }})">&#x1F5A8; Print Bill</button>
+              </div>
+            </div>
+            {% empty %}<div class="ept"><div class="ept-icon">&#x1F7E1;</div><div class="ept-txt">No accepted orders</div></div>{% endfor %}
+          </div>
+
+          <!-- COOKING -->
+          <div class="kol">
+            <div class="kol-hdr">
+              <div class="kol-dot" style="background:var(--purple)"></div>
+              <div class="kol-ttl">&#x1F7E3; Cooking</div>
+              <div class="kol-cnt">{{ cooking_orders.count }}</div>
+            </div>
+            {% for order in cooking_orders %}
+            <div class="ocard s-preparing">
+              <div class="oh">
+                <div><div class="onum">#{{ order.order_number }}</div><div class="otime">{{ order.created_at|timesince }} ago</div></div>
+                {% if order.order_type == 'takeaway' %}<span class="otyp typ-take">&#x1F3E0;</span>{% endif %}
+              </div>
+              <div class="ocust">&#x1F464; {{ order.customer_name }}</div>
+              <div class="otbl">{% if order.table %}&#x1FA91; {{ order.table }}{% else %}&#x1F3E0; Takeaway{% endif %}</div>
+              <div class="oitems-box">{% for item in order.items.all %}<div class="oi"><span>{{ item.quantity }}&times; {{ item.menu_item.name }}</span><span style="color:var(--red)">&#8377;{{ item.total_price }}</span></div>{% endfor %}</div>
+              {% if order.special_instructions %}<div class="ospnote">&#x1F4DD; {{ order.special_instructions }}</div>{% endif %}
+              <div class="ototl">&#8377;{{ order.total_amount }}</div>
+              <div class="oacts"><button class="abtn a-ready" onclick="doStatus({{ order.id }},'ready')">&#x1F514; Mark Ready</button></div>
+              <div style="margin-top:5px;">
+                <button class="abtn" style="background:rgba(155,89,182,.18);color:#9b59b6;border:1px solid rgba(155,89,182,.3);font-size:10px;" onclick="printBill({{ order.id }})">&#x1F5A8; Print Bill</button>
+              </div>
+            </div>
+            {% empty %}<div class="ept"><div class="ept-icon">&#x1F373;</div><div class="ept-txt">Nothing cooking</div></div>{% endfor %}
+          </div>
+
+          <!-- READY -->
+          <div class="kol">
+            <div class="kol-hdr">
+              <div class="kol-dot" style="background:var(--green)"></div>
+              <div class="kol-ttl">&#x1F7E2; Ready</div>
+              <div class="kol-cnt">{{ ready_orders.count }}</div>
+            </div>
+            {% for order in ready_orders %}
+            <div class="ocard s-ready">
+              <div class="oh">
+                <div><div class="onum">#{{ order.order_number }}</div><div class="otime">{{ order.created_at|timesince }} ago</div></div>
+                {% if order.order_type == 'takeaway' %}<span class="otyp typ-take">&#x1F3E0;</span>{% endif %}
+              </div>
+              <div class="ocust">&#x1F464; {{ order.customer_name }}</div>
+              <div class="otbl">{% if order.table %}&#x1FA91; {{ order.table }}{% else %}&#x1F3E0; Takeaway{% endif %}</div>
+              <div class="oitems-box">{% for item in order.items.all %}<div class="oi"><span>{{ item.quantity }}&times; {{ item.menu_item.name }}</span><span style="color:var(--red)">&#8377;{{ item.total_price }}</span></div>{% endfor %}</div>
+              {% if order.special_instructions %}<div class="ospnote">&#x1F4DD; {{ order.special_instructions }}</div>{% endif %}
+              <div class="ototl">&#8377;{{ order.total_amount }}</div>
+              <div class="oacts"><button class="abtn a-complete" onclick="openComplete({{ order.id }})">&#x2705; Complete &amp; Bill</button></div>
+              <div style="margin-top:5px;">
+                <button class="abtn" style="background:rgba(155,89,182,.18);color:#9b59b6;border:1px solid rgba(155,89,182,.3);font-size:10px;" onclick="printBill({{ order.id }})">&#x1F5A8; Print Bill</button>
+              </div>
+            </div>
+            {% empty %}<div class="ept"><div class="ept-icon">&#x1F7E2;</div><div class="ept-txt">No ready orders</div></div>{% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLES TAB -->
+      <div class="tab-content" id="tab-tables">
+        <div class="sec-title">&#x1FA91; Table Overview</div>
+        <div class="tables-grid">
+          {% for table in tables %}
+          <div class="ttile {{ table.status }}">
+            <div class="ttnum">{{ table.number }}</div>
+            <div class="ttname">{{ table.name }}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.22);margin-top:1px">&#x1F465; {{ table.capacity }} seats</div>
+            <div class="ttstatus ts-{{ table.status }}">{{ table.get_status_display }}</div>
+            {% if table.current_order %}<div class="ttorder">#{{ table.current_order.order_number }}<br>{{ table.current_order.customer_name }}<br><span style="color:var(--red)">{{ table.current_order.get_status_display }}</span></div>{% endif %}
+          </div>
+          {% empty %}<div class="ept"><div class="ept-icon">&#x1FA91;</div><div class="ept-txt">No tables</div></div>{% endfor %}
+        </div>
+      </div>
+
+      <!-- COMPLETED TAB -->
+      <div class="tab-content" id="tab-completed">
+        <div class="sec-title">&#x2705; Completed Orders</div>
+        <div class="comp-list">
+          {% for order in completed_orders %}
+          <div class="crow">
+            <div class="cbadge">{% if order.order_type == 'takeaway' %}&#x1F3E0;{% else %}&#x1FA91;{% endif %} DONE</div>
+            <div class="cinfo">
+              <div class="cnum">#{{ order.order_number }} &middot; {{ order.completed_at|date:"H:i"|default:order.created_at|date:"H:i" }}</div>
+              <div class="ccust">{{ order.customer_name }} &nbsp;{{ order.customer_phone }}&nbsp; {% if order.table %}{{ order.table }}{% else %}Takeaway{% endif %}</div>
+              <div class="citems">{% for item in order.items.all %}{{ item.quantity }}&times; {{ item.menu_item.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+            </div>
+            <div class="cright">
+              <div class="ctotal">&#8377;{{ order.total_amount }}</div>
+              {% if order.discount_percent > 0 %}<div style="font-size:10px;color:var(--green)">{{ order.discount_percent }}% off</div>{% endif %}
+              <div class="cpay">{{ order.get_payment_status_display }}</div>
+            </div>
+          </div>
+          {% empty %}<div class="ept"><div class="ept-icon">&#x1F4ED;</div><div class="ept-txt">No completed orders today</div></div>{% endfor %}
+        </div>
+      </div>
+
+      <!-- STATS & EXPORT TAB -->
+      <div class="tab-content" id="tab-stats">
+
+        <!-- Period selector -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <button class="period-btn active" onclick="setPeriod('today',this)">Today</button>
+          <button class="period-btn" onclick="setPeriod('week',this)">This Week</button>
+          <button class="period-btn" onclick="setPeriod('month',this)">This Month</button>
+          <button class="period-btn" onclick="setPeriod('all',this)">All Time</button>
+        </div>
+
+        <!-- Revenue stat cards -->
+        <div class="stats-row" style="grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;" id="statCards">
+          <div class="stat-card" style="--c:#f1c40f;padding:18px 20px;">
+            <div class="stat-label">&#x1F4B0; Revenue</div>
+            <div class="stat-val" style="font-size:26px;" id="sc-revenue">&#8377;{{ today_revenue|floatformat:0 }}</div>
+          </div>
+          <div class="stat-card" style="--c:var(--green);padding:18px 20px;">
+            <div class="stat-label">&#x2705; Orders Completed</div>
+            <div class="stat-val" style="font-size:26px;" id="sc-orders">{{ today_completed }}</div>
+          </div>
+          <div class="stat-card" style="--c:var(--blue);padding:18px 20px;">
+            <div class="stat-label">&#x1F4CB; Total Orders Placed</div>
+            <div class="stat-val" style="font-size:26px;" id="sc-placed">{{ today_orders_count }}</div>
+          </div>
+          <div class="stat-card" style="--c:var(--purple);padding:18px 20px;">
+            <div class="stat-label">&#x1F4C8; Avg Order Value</div>
+            <div class="stat-val" style="font-size:26px;">&#8377;{{ avg_order_val|floatformat:0 }}</div>
+          </div>
+        </div>
+
+        <!-- 7-day revenue chart -->
+        <div class="export-panel" style="margin-bottom:14px;">
+          <div class="sec-title">&#x1F4C8; Last 7 Days Revenue</div>
+          <canvas id="revenueChart" height="120" style="margin-top:12px;width:100%"></canvas>
+        </div>
+
+        <!-- Top selling items this month -->
+        <div class="export-panel" style="margin-bottom:14px;">
+          <div class="sec-title">&#x1F525; Top Items This Month</div>
+          {% if top_items %}
+          <div style="margin-top:10px;">
+            {% for item in top_items %}
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+              <div style="width:22px;height:22px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:white;flex-shrink:0;">{{ forloop.counter }}</div>
+              <div style="flex:1;font-size:13px;font-weight:600;color:white;">{{ item.item_name }}</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.4);">{{ item.total_qty }} sold</div>
+              <div style="font-size:12px;font-weight:700;color:#f1c40f;">&#8377;{{ item.total_rev|floatformat:0 }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div style="padding:18px 0;text-align:center;color:rgba(255,255,255,0.3);font-size:13px;">No completed orders this month yet</div>
+          {% endif %}
+        </div>
+
+        <!-- Quick Export Buttons -->
+        <div class="export-panel" style="margin-bottom:14px;">
+          <div class="sec-title">&#x1F4E5; Download Reports</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px;">
+            <a href="{% url 'export_daily_excel' %}" class="elink" style="background:rgba(39,174,96,.18);color:#2ecc71;border:1px solid rgba(39,174,96,.3);text-align:center;padding:11px;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none;" target="_blank">&#x1F4C5; Today&#39;s Orders</a>
+            <a href="{% url 'export_weekly_excel' %}" class="elink" style="background:rgba(22,160,133,.18);color:#1abc9c;border:1px solid rgba(22,160,133,.3);text-align:center;padding:11px;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none;" target="_blank">&#x1F5D3; This Week</a>
+            <a href="{% url 'export_monthly_excel' %}" class="elink" style="background:rgba(52,152,219,.18);color:#5dade2;border:1px solid rgba(52,152,219,.3);text-align:center;padding:11px;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none;" target="_blank">&#x1F4CA; This Month</a>
+            <a href="{% url 'export_excel' %}" class="elink" style="background:rgba(155,89,182,.18);color:#bb8fce;border:1px solid rgba(155,89,182,.3);text-align:center;padding:11px;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none;" target="_blank">&#x1F4DC; All Sales</a>
+            <a href="{% url 'download_qr_codes' %}" class="elink" style="background:rgba(142,68,173,.18);color:#c39bd3;border:1px solid rgba(142,68,173,.3);text-align:center;padding:11px;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none;grid-column:span 2;" target="_blank">&#x1F4F1; Print QR Codes for All Tables</a>
+          </div>
+        </div>
+
+        <!-- Custom Date Range -->
+        <div class="export-panel">
+          <div class="sec-title">&#x1F4C6; Custom Date Range Export</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:12px;">
+            <div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">From Date</div>
+              <input type="date" id="rangeFrom" style="padding:9px 11px;background:#0a0a15;color:white;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;color-scheme:dark;">
+            </div>
+            <div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">To Date</div>
+              <input type="date" id="rangeTo" style="padding:9px 11px;background:#0a0a15;color:white;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;color-scheme:dark;">
+            </div>
+            <button onclick="downloadRange()" style="padding:10px 20px;background:var(--red);color:white;border:none;border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+              &#x2B07; Download Excel
+            </button>
+          </div>
+          <div id="rangeError" style="color:var(--red);font-size:11px;margin-top:8px;display:none;"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+var knownIds = new Set({{ pending_ids_json|safe }});
+var maxId = {{ pending_orders.last.id|default:0 }};
+var completingId = null;
+
+// SOUND - loops until Accept clicked
+var sndActive = false, sndTimer = null, actx = null;
+function getCtx() {
+    if (!actx || actx.state === 'closed') actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    return actx;
+}
+function playBeep() {
+    try {
+        var ctx = getCtx();
+        [[880,0,.15],[1100,.18,.15],[880,.36,.15],[1320,.54,.30]].forEach(function(n) {
+            var o = ctx.createOscillator(), g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.frequency.value = n[0]; o.type = 'sine';
+            g.gain.setValueAtTime(0.4, ctx.currentTime + n[1]);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n[1] + n[2]);
+            o.start(ctx.currentTime + n[1]);
+            o.stop(ctx.currentTime + n[1] + n[2] + .05);
+        });
+    } catch(e) {}
+}
+function startSound() {
+    if (sndActive) return;
+    sndActive = true; playBeep();
+    sndTimer = setInterval(function(){ if (sndActive) playBeep(); }, 1400);
+}
+function stopSound() {
+    sndActive = false;
+    if (sndTimer) { clearInterval(sndTimer); sndTimer = null; }
+}
+
+// POLL every 4s
+async function poll() {
+    try {
+        var r = await fetch('/staff/orders/pending/?last_id=' + maxId);
+        if (!r.ok) return;
+        var d = await r.json();
+        (d.orders || []).forEach(function(o) {
+            if (!knownIds.has(o.id)) {
+                knownIds.add(o.id);
+                maxId = Math.max(maxId, o.id);
+                showAlert(o);
+            }
+        });
+    } catch(e) {}
+}
+setInterval(poll, 4000);
+
+function showAlert(o) {
+    startSound();
+    var typeHtml = o.order_type === 'takeaway'
+        ? '<span style="color:#1abc9c;font-weight:800">&#x1F3E0; HOME TAKEAWAY</span>'
+        : '<span style="color:#5dade2">&#x1FA91; Dine In</span>';
+    document.getElementById('notifBody').innerHTML =
+        '<strong style="color:white;font-size:15px">#' + o.order_number + '</strong> ' + typeHtml + '<br>' +
+        o.customer_name + ' &middot; ' + o.table + '<br>' +
+        '<span style="color:#e74c3c;font-size:22px;font-weight:800">&#8377;' + o.total + '</span>';
+    document.getElementById('notifOverlay').classList.add('show');
+}
+
+// Dismiss hides popup but sound keeps playing until Accept
+function closeNotif() {
+    document.getElementById('notifOverlay').classList.remove('show');
+    location.reload();
+}
+
+// TABS
+function goTab(name, el) {
+    document.querySelectorAll('.tab-content').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+    var tab = document.getElementById('tab-' + name);
+    if (tab) tab.classList.add('active');
+    if (el) el.classList.add('active');
+    var T = {orders:'&#x1F4CB; Orders',tables:'&#x1FA91; Tables',completed:'&#x2705; Completed',stats:'&#x1F4CA; Stats &amp; Export'};
+    document.getElementById('pageTitle').innerHTML = T[name] || 'Dashboard';
+}
+
+// ACCEPT - STOPS SOUND
+async function doAccept(orderId) {
+    try {
+        var r = await fetch('/staff/order/' + orderId + '/update/', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','X-CSRFToken': csrf()},
+            body: JSON.stringify({status: 'accepted'})
+        });
+        var d = await r.json();
+        if (d.success) {
+            stopSound();  // sound stops here ONLY
+            document.getElementById('notifOverlay').classList.remove('show');
+            toast('Order accepted!', 'success');
+            setTimeout(function(){ location.reload(); }, 550);
+        } else { toast(d.error || 'Error', 'error'); }
+    } catch(e) { toast('Connection error', 'error'); }
+}
+
+async function doStatus(orderId, status) {
+    try {
+        var r = await fetch('/staff/order/' + orderId + '/update/', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','X-CSRFToken': csrf()},
+            body: JSON.stringify({status: status})
+        });
+        var d = await r.json();
+        if (d.success) {
+            toast('Updated: ' + status, 'success');
+            setTimeout(function(){ location.reload(); }, 550);
+        } else { toast(d.error || 'Error', 'error'); }
+    } catch(e) { toast('Connection error', 'error'); }
+}
+
+function openComplete(id) {
+    completingId = id;
+    document.getElementById('completeModal').classList.add('show');
+}
+async function confirmComplete() {
+    var disc = document.getElementById('mDiscount').value;
+    var pay  = document.getElementById('mPayment').value;
+    document.getElementById('completeModal').classList.remove('show');
+    try {
+        var r = await fetch('/staff/order/' + completingId + '/update/', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','X-CSRFToken': csrf()},
+            body: JSON.stringify({status:'completed', discount_percent: disc, payment_method: pay})
+        });
+        var d = await r.json();
+        if (d.success) {
+            toast('Order completed! Bill ready for customer.', 'success');
+            setTimeout(function(){ location.reload(); }, 700);
+        } else { toast(d.error || 'Error', 'error'); }
+    } catch(e) { toast('Connection error', 'error'); }
+}
+
+function csrf() {
+    var m = document.cookie.match('(^|;)\s*csrftoken=([^;]+)');
+    return m ? m[2] : '';
+}
+
+function downloadRange() {
+    var from = document.getElementById('rangeFrom').value;
+    var to = document.getElementById('rangeTo').value;
+    var err = document.getElementById('rangeError');
+    err.style.display = 'none';
+    if (!from || !to) { err.textContent = 'Please select both From and To dates.'; err.style.display = 'block'; return; }
+    if (from > to) { err.textContent = 'From date must be before To date.'; err.style.display = 'block'; return; }
+    window.open('/staff/export/range/?from=' + from + '&to=' + to, '_blank');
+}
+
+// Period stats switcher
+var _statsData = {
+  today: { revenue: '₹{{ today_revenue|floatformat:0 }}', orders: '{{ today_completed }}', placed: '{{ today_orders_count }}' },
+  week:  { revenue: '₹{{ week_revenue|floatformat:0 }}',  orders: '{{ week_orders }}',     placed: '{{ week_orders }}' },
+  month: { revenue: '₹{{ month_revenue|floatformat:0 }}', orders: '{{ month_orders }}',    placed: '{{ month_orders }}' },
+  all:   { revenue: '₹{{ all_revenue|floatformat:0 }}',   orders: '{{ all_orders }}',      placed: '{{ all_orders }}' },
+};
+function setPeriod(key, btn) {
+  document.querySelectorAll('.period-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var d = _statsData[key];
+  document.getElementById('sc-revenue').textContent = d.revenue;
+  document.getElementById('sc-orders').textContent  = d.orders;
+  document.getElementById('sc-placed').textContent  = d.placed;
+}
+
+// Revenue chart (last 7 days)
+(function initChart() {
+  var canvas = document.getElementById('revenueChart');
+  if (!canvas) return;
+  var labels = {{ chart_labels_json|safe }};
+  var values = {{ chart_values_json|safe }};
+  var maxV = Math.max.apply(null, values) || 100;
+  var W = canvas.offsetWidth || 320;
+  var H = 120;
+  canvas.width = W;
+  canvas.height = H;
+  var ctx = canvas.getContext('2d');
+  var pad = { l:50, r:12, t:10, b:28 };
+  var gW = W - pad.l - pad.r;
+  var gH = H - pad.t - pad.b;
+  var barW = Math.floor(gW / labels.length * 0.55);
+  var gap   = Math.floor(gW / labels.length);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  [0,0.25,0.5,0.75,1].forEach(function(f){
+    var y = pad.t + gH * (1 - f);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = '9px Poppins,sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('₹'+(maxV*f).toFixed(0), pad.l - 4, y + 3);
+  });
+
+  // Bars + labels
+  values.forEach(function(v, i) {
+    var x = pad.l + i * gap + (gap - barW) / 2;
+    var bH = v > 0 ? Math.max(3, (v / maxV) * gH) : 2;
+    var y = pad.t + gH - bH;
+    // Bar gradient
+    var grad = ctx.createLinearGradient(0, y, 0, y + bH);
+    grad.addColorStop(0, '#e74c3c');
+    grad.addColorStop(1, 'rgba(231,76,60,0.3)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(x, y, barW, bH, [3,3,0,0]) : ctx.rect(x, y, barW, bH);
+    ctx.fill();
+    // Value on bar
+    if (v > 0) {
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 9px Poppins,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('₹'+v.toFixed(0), x + barW/2, y - 4);
+    }
+    // X label
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '9px Poppins,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(labels[i], x + barW/2, H - 6);
+  });
+})();
+
+// Set default date range to today
+(function() {
+    var today = new Date().toISOString().split('T')[0];
+    var rf = document.getElementById('rangeFrom');
+    var rt = document.getElementById('rangeTo');
+    if (rf) rf.value = today;
+    if (rt) rt.value = today;
+})();
+function toast(msg, type) {
+    var t = document.getElementById('toast');
+    t.innerHTML = msg;
+    t.className = 'toast show ' + (type || 'success');
+    clearTimeout(t._t);
+    t._t = setTimeout(function(){ t.classList.remove('show'); }, 3200);
+}
+setInterval(function(){
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-IN');
+}, 1000);
+
+// ── PRINT BILL ──────────────────────────────────────────────────
+function printBill(orderId) {
+    var url = '/order/' + orderId + '/print-bill/?auto=0';
+    window.open(url, '_blank', 'width=420,height=700,scrollbars=yes,toolbar=no,menubar=yes,status=no');
+}
+
+// ── REORDER SOUND (different tone from new-order sound) ────────
+var reorderSndActive = false, reorderSndTimer = null;
+function playReorderBeep() {
+    try {
+        var ctx = getCtx();
+        [[660,0,.12],[880,.15,.12],[660,.30,.12],[880,.45,.20]].forEach(function(n) {
+            var o = ctx.createOscillator(), g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.frequency.value = n[0]; o.type = 'triangle';
+            g.gain.setValueAtTime(0.35, ctx.currentTime + n[1]);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n[1] + n[2]);
+            o.start(ctx.currentTime + n[1]);
+            o.stop(ctx.currentTime + n[1] + n[2] + .05);
+        });
+    } catch(e) {}
+}
+function startReorderSound() {
+    if (reorderSndActive) return;
+    reorderSndActive = true; playReorderBeep();
+    reorderSndTimer = setInterval(function(){ if (reorderSndActive) playReorderBeep(); }, 2000);
+}
+function stopReorderSound() {
+    reorderSndActive = false;
+    if (reorderSndTimer) { clearInterval(reorderSndTimer); reorderSndTimer = null; }
+}
+
+// ── REORDER POLLING ────────────────────────────────────────────
+var maxReorderId = 0;
+var knownReorderIds = new Set();
+
+async function pollReorders() {
+    try {
+        var r = await fetch('/staff/orders/reorders/?last_id=' + maxReorderId);
+        if (!r.ok) return;
+        var d = await r.json();
+        (d.orders || []).forEach(function(o) {
+            if (!knownReorderIds.has(o.id)) {
+                knownReorderIds.add(o.id);
+                maxReorderId = Math.max(maxReorderId, o.id);
+                showReorderAlert(o);
+            }
+        });
+    } catch(e) {}
+}
+setInterval(pollReorders, 4000);
+
+function showReorderAlert(o) {
+    startReorderSound();
+    document.getElementById('reorderBody').innerHTML =
+        '<strong style="color:white;font-size:15px">#' + o.order_number + '</strong> &nbsp;' +
+        '<span style="color:#e67e22;">&#x1F504; REORDER</span><br>' +
+        o.customer_name + ' &middot; ' + o.table + '<br>' +
+        '<span style="color:#e67e22;font-size:20px;font-weight:800">&#8377;' + o.total + '</span><br>' +
+        '<small style="color:rgba(255,255,255,0.5)">Added to bill of order #' + o.parent_order_number + '</small>';
+    document.getElementById('reorderOverlay').classList.add('show');
+}
+
+function closeReorderNotif() {
+    stopReorderSound();
+    document.getElementById('reorderOverlay').classList.remove('show');
+    location.reload();
+}
+</script>
+</body>
+</html>

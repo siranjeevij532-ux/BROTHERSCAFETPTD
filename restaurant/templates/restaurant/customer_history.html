@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Brothers Cafe</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:#f0f2f5;min-height:100vh}
+.top-hdr{background:linear-gradient(135deg,#1a1a2e,#0f3460);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,0.3);}
+.hdr-left{display:flex;align-items:center;gap:11px}
+.back-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:white;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.hdr-title{color:white;font-size:16px;font-weight:700}
+.hdr-sub{color:rgba(255,255,255,0.55);font-size:11px;margin-top:1px}
+.logout-btn{background:rgba(231,76,60,0.2);border:1px solid rgba(231,76,60,0.35);color:#ff8080;padding:6px 13px;border-radius:20px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;}
+
+.content{padding:14px 14px 50px;max-width:600px;margin:0 auto}
+
+/* LIVE ORDER CARD (current/recent) */
+.live-card{background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:18px;padding:20px;margin-bottom:16px;color:white;position:relative;overflow:hidden;}
+.live-card::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:rgba(255,255,255,0.05);border-radius:50%;}
+.live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(231,76,60,0.25);border:1px solid rgba(231,76,60,0.4);color:#ff8080;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:12px;}
+.live-dot{width:7px;height:7px;background:#e74c3c;border-radius:50%;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.live-order-num{font-size:13px;opacity:0.6;margin-bottom:4px}
+.live-status-icon{font-size:42px;margin-bottom:8px;display:block}
+.live-status-title{font-size:20px;font-weight:800;margin-bottom:4px}
+.live-status-desc{font-size:12px;opacity:0.65;margin-bottom:16px}
+/* progress */
+.prog{display:flex;align-items:center;margin-bottom:18px}
+.pg-step{display:flex;flex-direction:column;align-items:center;flex:1}
+.pg-dot{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:13px;transition:0.4s;}
+.pg-step.done .pg-dot{background:#27ae60;border-color:#27ae60}
+.pg-step.active .pg-dot{background:#e74c3c;border-color:#e74c3c;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.pg-lbl{font-size:9px;color:rgba(255,255,255,0.45);margin-top:4px;text-align:center}
+.pg-step.done .pg-lbl,.pg-step.active .pg-lbl{color:rgba(255,255,255,0.85);font-weight:600}
+.pg-line{flex:1;height:2px;background:rgba(255,255,255,0.12);max-width:24px}
+.pg-line.done{background:#27ae60}
+.live-total{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;margin-bottom:12px;}
+.live-total-label{font-size:12px;opacity:0.65}
+.live-total-val{font-size:18px;font-weight:800;color:#ff8080}
+.live-actions{display:flex;gap:8px}
+.la-btn{flex:1;padding:11px;border:none;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;}
+.la-bill{background:#27ae60;color:white}
+.la-menu{background:rgba(255,255,255,0.12);color:white;border:1px solid rgba(255,255,255,0.2)}
+.la-home{background:#e74c3c;color:white;width:100%}
+
+/* PAST ORDERS */
+.sec-title{font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 10px;padding:0 2px}
+.order-card{background:white;border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
+.order-head{padding:13px 15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.order-num{font-size:13px;font-weight:700;color:#2c3e50}
+.order-date{font-size:11px;color:#aaa;margin-top:2px}
+.st-badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px}
+.st-done{background:#d4edda;color:#27ae60}
+.st-cancel{background:#fde8e8;color:#e74c3c}
+.st-other{background:#e8f4ff;color:#3498db}
+.order-body{display:none;padding:10px 15px 14px;border-top:1px solid #f5f5f5}
+.order-body.open{display:block}
+.oi-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:#555;border-bottom:1px solid #f9f9f9}
+.oi-row:last-of-type{border:none}
+.oi-total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding-top:8px;margin-top:4px;border-top:2px solid #f0f0f0;color:#1a1a2e}
+.oi-total span:last-child{color:#e74c3c}
+.chev{color:#ccc;font-size:14px;transition:0.2s;flex-shrink:0}
+.chev.open{transform:rotate(180deg)}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px}
+.empty-icon{font-size:55px;margin-bottom:14px}
+.empty-title{font-size:17px;font-weight:700;color:#2c3e50;margin-bottom:7px}
+.empty-sub{font-size:13px;color:#888}
+</style>
+</head>
+<body>
+<div class="top-hdr">
+  <div class="hdr-left">
+    <button class="back-btn" onclick="goToMenu()">&#x2190;</button>
+    <div>
+      <div class="hdr-title">📋 My Orders</div>
+      <div class="hdr-sub">{{ customer_name }} &middot; {{ customer_phone }}</div>
+    </div>
+  </div>
+  <a href="/customer/logout/" class="logout-btn" onclick="return confirm('Log out?')">🚪 Logout</a>
+</div>
+
+<div class="content">
+
+{% if orders %}
+  {% with latest=orders.0 %}
+  {% with lo=latest.order %}
+
+  <!-- ══ LIVE ORDER CARD ══ -->
+  <div class="live-card" id="liveCard">
+    <div class="live-badge"><span class="live-dot"></span> Live Order</div>
+    <div class="live-order-num">Order #{{ lo.order_number }}</div>
+    <div class="live-status-icon" id="liveIcon">⏳</div>
+    <div class="live-status-title" id="liveTitle">{{ lo.get_status_display }}</div>
+    <div class="live-status-desc" id="liveDesc">Waiting for staff update...</div>
+
+    <!-- Progress bar -->
+    <div class="prog">
+      <div class="pg-step" id="pg-pending"><div class="pg-dot">📋</div><div class="pg-lbl">Received</div></div>
+      <div class="pg-line" id="pl1"></div>
+      <div class="pg-step" id="pg-accepted"><div class="pg-dot">✅</div><div class="pg-lbl">Accepted</div></div>
+      <div class="pg-line" id="pl2"></div>
+      <div class="pg-step" id="pg-preparing"><div class="pg-dot">👨‍🍳</div><div class="pg-lbl">Cooking</div></div>
+      <div class="pg-line" id="pl3"></div>
+      <div class="pg-step" id="pg-ready"><div class="pg-dot">🔔</div><div class="pg-lbl">Ready</div></div>
+      <div class="pg-line" id="pl4"></div>
+      <div class="pg-step" id="pg-completed"><div class="pg-dot">🎉</div><div class="pg-lbl">Done</div></div>
+    </div>
+
+    <div class="live-total">
+      <span class="live-total-label">Bill Total</span>
+      <span class="live-total-val" id="liveTot">₹{{ latest.combined_total }}</span>
+    </div>
+
+    <div class="live-actions" id="liveActions">
+      <!-- Buttons injected by JS based on status -->
+    </div>
+  </div>
+
+  {% endwith %}
+
+  <!-- ══ PAST ORDERS ══ -->
+  {% if orders|length > 1 %}
+  <div class="sec-title">Past Orders</div>
+  {% for entry in orders %}{% if not forloop.first %}
+  {% with order=entry.order %}
+  <div class="order-card">
+    <div class="order-head" onclick="toggleOrder({{ order.id }})">
+      <div>
+        <div class="order-num">📋 #{{ order.order_number }}</div>
+        <div class="order-date">{{ order.created_at|date:"d M Y, h:i A" }}
+          {% if entry.reorder_count > 0 %}&nbsp;·&nbsp;+{{ entry.reorder_count }} extra{% endif %}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px">
+        <span class="st-badge {% if order.status == 'completed' %}st-done{% elif order.status == 'cancelled' %}st-cancel{% else %}st-other{% endif %}">
+          {% if order.status == 'completed' %}✅ Done{% elif order.status == 'cancelled' %}❌ Cancelled{% else %}{{ order.get_status_display }}{% endif %}
+        </span>
+        <span class="chev" id="chev-{{ order.id }}">⌃</span>
+      </div>
+    </div>
+    <div class="order-body" id="body-{{ order.id }}">
+      {% for item in entry.all_items %}
+      <div class="oi-row">
+        <span>{{ item.quantity }}× {{ item.menu_item.name }}</span>
+        <span style="font-weight:600;color:#e74c3c">₹{{ item.total_price }}</span>
+      </div>
+      {% endfor %}
+      <div class="oi-total">
+        <span>Total</span><span>₹{{ entry.combined_total }}</span>
+      </div>
+    </div>
+  </div>
+  {% endwith %}
+  {% endif %}{% endfor %}
+  {% endif %}
+
+  {% endwith %}
+{% else %}
+<div class="empty">
+  <div class="empty-icon">🍽️</div>
+  <div class="empty-title">No orders yet!</div>
+  <div class="empty-sub">Go back to the menu to place your first order.</div>
+</div>
+{% endif %}
+
+</div>
+
+<script>
+var LIVE_ORDER_ID = {% if orders %}{{ orders.0.order.id }}{% else %}null{% endif %};
+var LIVE_TABLE_ID = {% if orders and orders.0.order.table %}{{ orders.0.order.table.id }}{% else %}null{% endif %};
+var currentStatus = '{% if orders %}{{ orders.0.order.status }}{% endif %}';
+
+var STATUS_CFG = {
+  pending:   {icon:'⏳', title:'Order Received!',    desc:'Your order is waiting to be accepted by staff.'},
+  accepted:  {icon:'✅', title:'Order Accepted!',    desc:'Our team has accepted your order!'},
+  preparing: {icon:'👨‍🍳',title:'Being Prepared!',   desc:'Our chef is preparing your food right now!'},
+  ready:     {icon:'🔔', title:'Ready to Serve!',    desc:'Your food is ready! Staff will bring it to you.'},
+  completed: {icon:'🎉', title:'Bill Ready!',        desc:'Your order is complete. Tap below to view your bill.'},
+  cancelled: {icon:'❌', title:'Order Cancelled',    desc:'Your order was cancelled. You can go back to the menu.'},
+};
+var STATUS_ORDER = ['pending','accepted','preparing','ready','completed'];
+
+function updateLiveUI(status, total, allCompleted){
+  var cfg = STATUS_CFG[status] || STATUS_CFG.pending;
+  document.getElementById('liveIcon').textContent  = cfg.icon;
+  document.getElementById('liveTitle').textContent = cfg.title;
+  document.getElementById('liveDesc').textContent  = cfg.desc;
+  if(total !== undefined) document.getElementById('liveTot').textContent = '₹' + parseFloat(total).toFixed(2);
+
+  var idx = STATUS_ORDER.indexOf(status);
+  STATUS_ORDER.forEach(function(s, i){
+    var el = document.getElementById('pg-'+s); if(!el) return;
+    el.classList.remove('done','active');
+    if(i < idx) el.classList.add('done');
+    else if(i === idx) el.classList.add('active');
+  });
+  [1,2,3,4].forEach(function(n){
+    var l = document.getElementById('pl'+n);
+    if(l) l.classList.toggle('done', idx >= n);
+  });
+
+  // Actions
+  var acts = document.getElementById('liveActions');
+  acts.innerHTML = '';
+  if(status === 'cancelled'){
+    var menuUrl = LIVE_TABLE_ID ? '/table/'+LIVE_TABLE_ID+'/menu/' : '/takeaway/';
+    acts.innerHTML = '<a href="'+menuUrl+'" class="la-btn la-home">📋 Go to Menu</a>';
+  } else if(allCompleted){
+    acts.innerHTML = '<a href="/order/'+LIVE_ORDER_ID+'/bill/" class="la-btn la-bill">🧾 View Bill & Pay</a>';
+  } else if(status !== 'completed'){
+    var menuUrl = LIVE_TABLE_ID ? '/table/'+LIVE_TABLE_ID+'/menu/' : '#';
+    acts.innerHTML = '<a href="'+menuUrl+'" class="la-btn la-menu">➕ Add More Items</a>';
+  }
+}
+
+// Initial render
+if(LIVE_ORDER_ID){
+  updateLiveUI(currentStatus, null, {% if orders and orders.0.order.status == 'completed' %}true{% else %}false{% endif %});
+}
+
+// Poll every 5 seconds
+var pollTimer;
+async function pollLive(){
+  if(!LIVE_ORDER_ID) return;
+  try{
+    var r = await fetch('/order/'+LIVE_ORDER_ID+'/status/', {headers:{'X-Requested-With':'XMLHttpRequest'}});
+    var d = await r.json();
+    if(d.status !== currentStatus || d.all_completed){
+      currentStatus = d.status;
+      updateLiveUI(d.status, d.combined_total, d.all_completed);
+      if(d.all_completed && d.status !== 'cancelled'){
+        // Auto-reload to refresh bill button
+        clearInterval(pollTimer);
+        setTimeout(function(){ location.reload(); }, 800);
+      }
+    } else if(d.combined_total){
+      document.getElementById('liveTot').textContent = '₹'+parseFloat(d.combined_total).toFixed(2);
+    }
+  } catch(e){}
+}
+if(LIVE_ORDER_ID) pollTimer = setInterval(pollLive, 5000);
+
+// Toggle past orders
+function toggleOrder(id){
+  var b = document.getElementById('body-'+id);
+  var c = document.getElementById('chev-'+id);
+  b.classList.toggle('open');
+  c.classList.toggle('open');
+}
+
+// Back button = go back to menu (categories)
+function goToMenu(){
+  if(LIVE_TABLE_ID){ window.location.href = '/table/'+LIVE_TABLE_ID+'/menu/'; }
+  else { window.location.href = '/takeaway/'; }
+}
+
+// Block phone back button from leaving history (keep on this page)
+history.pushState({page:'history'},'','');
+window.addEventListener('popstate', function(){
+  history.pushState({page:'history'},'','');
+});
+</script>
+</body>
+</html>

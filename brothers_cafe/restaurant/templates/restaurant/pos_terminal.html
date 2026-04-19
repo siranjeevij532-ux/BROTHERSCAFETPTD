@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POS Terminal — Brothers Cafe</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0b0c10;--surface:#13141a;--panel:#1a1b24;--border:rgba(255,255,255,0.07);
+  --accent:#f5a623;--accent2:#e74c3c;--green:#2ecc71;--blue:#3498db;
+  --text:#f0f0f0;--muted:rgba(240,240,240,0.38);--faint:rgba(240,240,240,0.1);
+  --mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+/* ── TOP BAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);padding:0 20px;height:52px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.tb-left{display:flex;align-items:center;gap:12px;}
+.tb-logo{font-size:20px;}
+.tb-brand{font-weight:800;font-size:14px;letter-spacing:.3px;}
+.tb-tag{font-size:9px;background:var(--accent);color:#000;border-radius:4px;padding:2px 7px;font-weight:700;letter-spacing:1px;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-time{font-family:var(--mono);font-size:13px;color:var(--muted);}
+.tb-back{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:rgba(255,255,255,0.05);color:var(--muted);font-size:12px;font-weight:600;text-decoration:none;border:1px solid var(--border);transition:.15s;}
+.tb-back:hover{color:var(--text);background:rgba(255,255,255,0.09);}
+
+/* ── LAYOUT ── */
+.workspace{display:flex;flex:1;overflow:hidden;}
+
+/* ── LEFT: MENU ── */
+.menu-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+
+/* Categories row */
+.cats-row{display:flex;gap:8px;padding:14px 16px 10px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+.cats-row::-webkit-scrollbar{display:none;}
+.cat-chip{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:30px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s;}
+.cat-chip.active,.cat-chip:hover{background:var(--accent);color:#000;border-color:var(--accent);}
+.cat-icon{font-size:14px;}
+
+/* Search */
+.search-wrap{padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.search-inp{width:100%;padding:9px 14px 9px 38px;background:var(--panel);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center;transition:.15s;}
+.search-inp:focus{border-color:var(--accent);background-color:rgba(245,166,35,0.05);}
+.search-inp::placeholder{color:var(--muted);}
+
+/* Items grid */
+.items-grid{flex:1;overflow-y:auto;padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;align-content:start;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.items-grid::-webkit-scrollbar{width:4px;}
+.items-grid::-webkit-scrollbar-thumb{background:var(--border);}
+
+.item-card{background:var(--panel);border-radius:12px;border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:.15s;position:relative;}
+.item-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px rgba(245,166,35,0.12);}
+.item-card.unavail{opacity:.35;pointer-events:none;}
+.item-img{width:100%;height:90px;object-fit:cover;background:#1e1f2a;}
+.item-img-placeholder{width:100%;height:90px;display:flex;align-items:center;justify-content:center;font-size:34px;background:linear-gradient(135deg,#1e1f2a,#161720);}
+.item-body{padding:9px 11px;}
+.item-name{font-size:12px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:3px;}
+.item-price{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:700;}
+.item-badge{position:absolute;top:7px;right:7px;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;}
+.b-veg{background:rgba(46,204,113,.25);color:#2ecc71;}
+.b-nonveg{background:rgba(231,76,60,.2);color:#e74c3c;}
+.b-vegan{background:rgba(26,188,156,.2);color:#1abc9c;}
+.b-bev{background:rgba(52,152,219,.2);color:#3498db;}
+.item-qty-ctrl{position:absolute;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border-radius:0 0 12px 12px;display:none;}
+.item-card.in-cart .item-qty-ctrl{display:flex;}
+.item-card.in-cart{border-color:var(--accent);}
+.qty-btn{width:26px;height:26px;border-radius:7px;border:none;cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:.1s;line-height:1;}
+.qty-minus{background:rgba(231,76,60,.18);color:#e74c3c;}
+.qty-plus{background:rgba(245,166,35,.18);color:var(--accent);}
+.qty-num{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);}
+
+/* ── RIGHT: ORDER ── */
+.order-panel{width:320px;display:flex;flex-direction:column;background:var(--surface);flex-shrink:0;}
+
+.order-hdr{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.order-title{font-size:14px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px;}
+.order-count{background:var(--accent);color:#000;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;}
+
+/* Customer info */
+.cust-form{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.cf-row{display:flex;gap:8px;margin-bottom:8px;}
+.cf-inp{flex:1;padding:8px 11px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;transition:.15s;}
+.cf-inp:focus{border-color:var(--accent);}
+.cf-inp::placeholder{color:var(--muted);}
+.cf-label{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;font-weight:600;}
+
+/* Discount pills */
+.disc-row{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.disc-none{font-size:10px;color:var(--muted);align-self:center;}
+.disc-chip{padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--sans);font-size:11px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap;}
+.disc-chip.active{background:rgba(46,204,113,.18);color:#2ecc71;border-color:#2ecc71;}
+.disc-chip:hover:not(.active){border-color:var(--accent);color:var(--accent);}
+.disc-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;align-self:center;margin-right:2px;}
+
+/* Cart items */
+.cart-items{flex:1;overflow-y:auto;padding:10px 14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.cart-items::-webkit-scrollbar{width:3px;}
+.cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);}
+.cart-empty-icon{font-size:40px;margin-bottom:10px;opacity:.4;}
+.cart-empty-txt{font-size:12px;text-align:center;line-height:1.6;}
+.ci{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:var(--panel);border:1px solid var(--border);margin-bottom:7px;}
+.ci:last-child{margin-bottom:0;}
+.ci-name{flex:1;font-size:12px;font-weight:600;color:var(--text);min-width:0;}
+.ci-qty-ctrl{display:flex;align-items:center;gap:5px;}
+.ci-btn{width:22px;height:22px;border-radius:6px;border:none;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;}
+.ci-minus{background:rgba(231,76,60,.18);color:#e74c3c;}
+.ci-plus{background:rgba(245,166,35,.18);color:var(--accent);}
+.ci-q{font-family:var(--mono);font-size:12px;color:var(--text);min-width:18px;text-align:center;}
+.ci-price{font-family:var(--mono);font-size:12px;color:var(--accent);white-space:nowrap;}
+
+/* Totals */
+.totals{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;}
+.tot-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12px;}
+.tot-label{color:var(--muted);}
+.tot-val{font-family:var(--mono);color:var(--text);}
+.tot-disc-val{font-family:var(--mono);color:#2ecc71;}
+.tot-final{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.tot-final-lbl{font-size:13px;font-weight:800;color:var(--text);}
+.tot-final-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);}
+
+/* Action buttons */
+.actions{padding:12px 16px 16px;display:flex;gap:8px;flex-shrink:0;}
+.act-btn{flex:1;padding:12px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.act-save{background:var(--accent);color:#000;}
+.act-save:hover:not(:disabled){background:#e8961a;transform:translateY(-1px);}
+.act-save:disabled{opacity:.4;cursor:not-allowed;}
+.act-cancel{background:rgba(231,76,60,.12);color:#e74c3c;border:1px solid rgba(231,76,60,.25);}
+.act-cancel:hover{background:rgba(231,76,60,.2);}
+
+/* ── SUCCESS OVERLAY ── */
+.success-ov{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;display:none;align-items:center;justify-content:center;}
+.success-ov.show{display:flex;}
+.success-card{background:var(--panel);border-radius:20px;padding:36px 32px;text-align:center;max-width:380px;width:92%;border:2px solid var(--green);animation:popIn .35s;}
+@keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.sc-icon{font-size:52px;margin-bottom:12px;}
+.sc-title{font-size:20px;font-weight:800;color:var(--green);margin-bottom:6px;}
+.sc-ord{font-family:var(--mono);font-size:14px;color:var(--accent);margin-bottom:4px;}
+.sc-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;}
+.sc-btn{padding:11px 28px;border-radius:10px;border:none;background:var(--green);color:#000;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.sc-btn:hover{background:#25bb66;}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:16px;right:16px;z-index:9000;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:11px 16px;border-radius:10px;font-size:12px;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,0.5);display:none;}
+.toast.show{display:flex;align-items:center;gap:8px;animation:slideIn .25s;}
+@keyframes slideIn{from{transform:translateX(110%)}to{transform:translateX(0)}}
+.toast.t-err{border-left:3px solid #e74c3c;}
+.toast.t-ok{border-left:3px solid var(--green);}
+
+/* Scrollbar global */
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent;}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-left">
+    <span class="tb-logo">☕</span>
+    <span class="tb-brand">Brothers Cafe</span>
+    <span class="tb-tag">POS</span>
+  </div>
+  <div class="tb-right">
+    <span class="tb-time" id="clock">--:--:--</span>
+    <a href="{% url 'staff_portal' %}" class="tb-back">← Staff Portal</a>
+  </div>
+</div>
+
+<!-- MAIN WORKSPACE -->
+<div class="workspace">
+
+  <!-- ── LEFT: MENU BROWSER ── -->
+  <div class="menu-panel">
+    <!-- Category Chips -->
+    <div class="cats-row">
+      <button class="cat-chip active" data-cat="all" onclick="filterCat('all',this)">
+        <span class="cat-icon">🍽️</span> All
+      </button>
+      {% for cat in categories %}
+      <button class="cat-chip" data-cat="{{ cat.id }}" onclick="filterCat('{{ cat.id }}',this)">
+        {% if cat.icon %}<span class="cat-icon">{{ cat.icon }}</span>{% endif %}
+        {{ cat.name }}
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <input type="text" class="search-inp" id="searchInp" placeholder="Search menu items…" oninput="filterSearch(this.value)">
+    </div>
+
+    <!-- Items Grid -->
+    <div class="items-grid" id="itemsGrid">
+      {% for cat in categories %}
+        {% for item in cat.items.all %}
+        {% if item.is_available %}
+        <div class="item-card" data-id="{{ item.id }}" data-cat="{{ cat.id }}" data-name="{{ item.name|lower }}"
+             onclick="addItem({{ item.id }}, '{{ item.name|escapejs }}', {{ item.price }}, '{{ item.item_type }}')">
+
+          {% if item.image %}
+          <img class="item-img" src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">
+          {% else %}
+          <div class="item-img-placeholder">
+            {% if item.item_type == 'beverage' %}☕{% elif item.item_type == 'veg' %}🥗{% elif item.item_type == 'nonveg' %}🍖{% else %}🌿{% endif %}
+          </div>
+          {% endif %}
+
+          <span class="item-badge
+            {% if item.item_type == 'veg' %}b-veg{% elif item.item_type == 'nonveg' %}b-nonveg{% elif item.item_type == 'vegan' %}b-vegan{% else %}b-bev{% endif %}">
+            {{ item.get_item_type_display }}
+          </span>
+
+          <div class="item-body">
+            <div class="item-name">{{ item.name }}</div>
+            <div class="item-price">₹{{ item.price }}</div>
+          </div>
+
+          <!-- Qty control (shown when in cart) -->
+          <div class="item-qty-ctrl" onclick="event.stopPropagation()">
+            <button class="qty-btn qty-minus" onclick="changeQty({{ item.id }}, -1)">−</button>
+            <span class="qty-num" id="card-qty-{{ item.id }}">1</span>
+            <button class="qty-btn qty-plus" onclick="changeQty({{ item.id }}, 1)">+</button>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── RIGHT: ORDER PANEL ── -->
+  <div class="order-panel">
+    <!-- Header -->
+    <div class="order-hdr">
+      <div class="order-title">
+        🧾 Current Order
+        <span class="order-count" id="cartCount">0</span>
+      </div>
+    </div>
+
+    <!-- Customer Info -->
+    <div class="cust-form">
+      <div class="cf-label">Customer Details</div>
+      <div class="cf-row">
+        <div style="flex:1">
+          <input type="text" class="cf-inp" id="custName" placeholder="Name *" autocomplete="off">
+        </div>
+        <div style="flex:1">
+          <input type="tel" class="cf-inp" id="custPhone" placeholder="Phone (optional)" autocomplete="off" maxlength="10">
+        </div>
+      </div>
+    </div>
+
+    <!-- Discounts -->
+    {% if discounts %}
+    <div class="disc-row">
+      <span class="disc-label">Discount:</span>
+      <button class="disc-chip active" data-pct="0" onclick="selectDisc(0,this)">None</button>
+      {% for d in discounts %}
+      <button class="disc-chip" data-pct="{{ d.percent }}" onclick="selectDisc({{ d.percent }},this)">
+        {{ d.name }} ({{ d.percent }}%)
+      </button>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="disc-row"><span class="disc-none">No active discounts</span></div>
+    {% endif %}
+
+    <!-- Cart Items -->
+    <div class="cart-items" id="cartItems">
+      <div class="cart-empty" id="cartEmpty">
+        <div class="cart-empty-icon">🛒</div>
+        <div class="cart-empty-txt">No items yet<br><span style="color:rgba(255,255,255,0.2)">Click menu items to add</span></div>
+      </div>
+    </div>
+
+    <!-- Totals -->
+    <div class="totals">
+      <div class="tot-row">
+        <span class="tot-label">Subtotal</span>
+        <span class="tot-val" id="totSubtotal">₹0.00</span>
+      </div>
+      <div class="tot-row" id="discRow" style="display:none">
+        <span class="tot-label" id="discLabel">Discount</span>
+        <span class="tot-disc-val" id="totDisc">−₹0.00</span>
+      </div>
+      <div class="tot-final">
+        <span class="tot-final-lbl">TOTAL</span>
+        <span class="tot-final-val" id="totFinal">₹0.00</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="act-btn act-save" id="saveBtn" onclick="saveOrder()" disabled>
+        ✅ Save Order
+      </button>
+      <button class="act-btn act-cancel" onclick="cancelOrder()">
+        ✕ Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-ov" id="successOv">
+  <div class="success-card">
+    <div class="sc-icon">✅</div>
+    <div class="sc-title">Order Saved!</div>
+    <div class="sc-ord" id="scOrdNum"></div>
+    <div class="sc-sub" id="scSub">Order is now in the Staff Portal.<br>Cart cleared & ready for next order.</div>
+    <button class="sc-btn" onclick="closeSuccess()">+ New Order</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+const cart = {}; // {id: {name, price, qty}}
+let discountPct = 0;
+
+// ── CLOCK ──
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+}
+tick(); setInterval(tick,1000);
+
+// ── FILTER ──
+function filterCat(catId, btn){
+  document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.item-card').forEach(card=>{
+    const match = catId==='all' || card.dataset.cat===catId;
+    card.style.display = match ? '' : 'none';
+  });
+}
+
+function filterSearch(q){
+  const lower=q.toLowerCase();
+  document.querySelectorAll('.item-card').forEach(card=>{
+    card.style.display=card.dataset.name.includes(lower)?'':'none';
+  });
+}
+
+// ── CART ──
+function addItem(id, name, price, type){
+  if(cart[id]){
+    cart[id].qty++;
+  } else {
+    cart[id]={name,price:parseFloat(price),qty:1};
+  }
+  updateCardQty(id);
+  renderCart();
+}
+
+function changeQty(id, delta){
+  if(!cart[id]) return;
+  cart[id].qty += delta;
+  if(cart[id].qty <= 0){
+    delete cart[id];
+    const card=document.querySelector(`.item-card[data-id="${id}"]`);
+    if(card){ card.classList.remove('in-cart'); }
+  }
+  updateCardQty(id);
+  renderCart();
+}
+
+function updateCardQty(id){
+  const card=document.querySelector(`.item-card[data-id="${id}"]`);
+  const qEl=document.getElementById(`card-qty-${id}`);
+  if(!card) return;
+  if(cart[id]){
+    card.classList.add('in-cart');
+    if(qEl) qEl.textContent=cart[id].qty;
+  } else {
+    card.classList.remove('in-cart');
+  }
+}
+
+function renderCart(){
+  const el=document.getElementById('cartItems');
+  const empty=document.getElementById('cartEmpty');
+  const keys=Object.keys(cart);
+
+  if(keys.length===0){
+    empty.style.display='flex';
+    el.querySelectorAll('.ci').forEach(c=>c.remove());
+    updateTotals(); updateCount(0); updateSaveBtn();
+    return;
+  }
+  empty.style.display='none';
+
+  // Remove rows not in cart
+  el.querySelectorAll('.ci').forEach(ci=>{
+    if(!cart[ci.dataset.id]) ci.remove();
+  });
+
+  keys.forEach(id=>{
+    const item=cart[id];
+    let row=el.querySelector(`.ci[data-id="${id}"]`);
+    if(!row){
+      row=document.createElement('div');
+      row.className='ci'; row.dataset.id=id;
+      el.appendChild(row);
+    }
+    const lineTotal=(item.price*item.qty).toFixed(2);
+    row.innerHTML=`
+      <div class="ci-name">${item.name}</div>
+      <div class="ci-qty-ctrl">
+        <button class="ci-btn ci-minus" onclick="changeQty(${id},-1)">−</button>
+        <span class="ci-q">${item.qty}</span>
+        <button class="ci-btn ci-plus" onclick="changeQty(${id},1)">+</button>
+      </div>
+      <div class="ci-price">₹${lineTotal}</div>`;
+  });
+
+  updateTotals();
+  updateCount(keys.length);
+  updateSaveBtn();
+}
+
+function updateTotals(){
+  const sub=Object.values(cart).reduce((s,i)=>s+i.price*i.qty,0);
+  const discAmt=sub*discountPct/100;
+  const total=sub-discAmt;
+  document.getElementById('totSubtotal').textContent='₹'+sub.toFixed(2);
+  document.getElementById('totFinal').textContent='₹'+total.toFixed(2);
+  const discRow=document.getElementById('discRow');
+  if(discountPct>0 && sub>0){
+    discRow.style.display='flex';
+    document.getElementById('totDisc').textContent='−₹'+discAmt.toFixed(2);
+  } else {
+    discRow.style.display='none';
+  }
+}
+
+function updateCount(n){
+  document.getElementById('cartCount').textContent=n;
+}
+
+function updateSaveBtn(){
+  const hasItems=Object.keys(cart).length>0;
+  document.getElementById('saveBtn').disabled=!hasItems;
+}
+
+// ── DISCOUNT ──
+function selectDisc(pct, btn){
+  discountPct=parseFloat(pct)||0;
+  document.querySelectorAll('.disc-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  const label=document.getElementById('discLabel');
+  if(label && pct>0) label.textContent=`Discount (${pct}%)`;
+  updateTotals();
+}
+
+// ── SAVE ORDER ──
+function saveOrder(){
+  const name=document.getElementById('custName').value.trim();
+  if(!name){ showToast('❌ Customer name is required','t-err'); return; }
+  const keys=Object.keys(cart);
+  if(keys.length===0){ showToast('❌ Add items first','t-err'); return; }
+
+  const items=keys.map(id=>({id:parseInt(id),qty:cart[id].qty}));
+  const phone=document.getElementById('custPhone').value.trim()||'0000000000';
+
+  const payload={
+    customer_name:name,
+    customer_phone:phone,
+    items:items,
+    discount_percent:discountPct,
+    order_type:'dine_in',
+    special_instructions:'[POS Terminal]',
+  };
+
+  // Get CSRF
+  const csrf=getCookie('csrftoken');
+  document.getElementById('saveBtn').disabled=true;
+  document.getElementById('saveBtn').textContent='Saving…';
+
+  fetch('/order/place/', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-CSRFToken':csrf},
+    body:JSON.stringify(payload)
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.success){
+      document.getElementById('scOrdNum').textContent='Order #'+data.order_number;
+      document.getElementById('successOv').classList.add('show');
+    } else {
+      showToast('❌ '+(data.error||'Failed to save order'),'t-err');
+      resetSaveBtn();
+    }
+  })
+  .catch(()=>{
+    showToast('❌ Network error. Try again.','t-err');
+    resetSaveBtn();
+  });
+}
+
+function resetSaveBtn(){
+  const btn=document.getElementById('saveBtn');
+  btn.disabled=Object.keys(cart).length===0;
+  btn.innerHTML='✅ Save Order';
+}
+
+function closeSuccess(){
+  document.getElementById('successOv').classList.remove('show');
+  // Clear everything
+  Object.keys(cart).forEach(id=>{
+    delete cart[id];
+    const card=document.querySelector(`.item-card[data-id="${id}"]`);
+    if(card) card.classList.remove('in-cart');
+    const qEl=document.getElementById(`card-qty-${id}`);
+    if(qEl) qEl.textContent='1';
+  });
+  document.getElementById('custName').value='';
+  document.getElementById('custPhone').value='';
+  discountPct=0;
+  document.querySelectorAll('.disc-chip').forEach(c=>c.classList.remove('active'));
+  const noneChip=document.querySelector('.disc-chip[data-pct="0"]');
+  if(noneChip) noneChip.classList.add('active');
+  renderCart();
+  resetSaveBtn();
+}
+
+function cancelOrder(){
+  if(Object.keys(cart).length===0){ showToast('Cart is already empty','t-ok'); return; }
+  if(!confirm('Clear the current order?')) return;
+  closeSuccess(); // reuses clear logic
+  showToast('🗑️ Order cancelled','t-ok');
+}
+
+// ── HELPERS ──
+function getCookie(name){
+  let val=null;
+  document.cookie.split(';').forEach(c=>{
+    const [k,v]=c.trim().split('=');
+    if(k===name) val=decodeURIComponent(v);
+  });
+  return val;
+}
+
+function showToast(msg,cls){
+  const t=document.getElementById('toast');
+  t.className='toast show '+(cls||'');
+  t.textContent=msg;
+  clearTimeout(t._to);
+  t._to=setTimeout(()=>t.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>

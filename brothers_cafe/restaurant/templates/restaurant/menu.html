@@ -1,0 +1,985 @@
+{% extends 'restaurant/base.html' %}
+{% block title %}Brothers Cafe{% endblock %}
+{% block extra_css %}
+<style>
+*{box-sizing:border-box}
+body{background:#f5f5f5;font-family:'Poppins',sans-serif;margin:0}
+
+/* ── HEADER ── */
+header{background:linear-gradient(135deg,#1a1a2e,#0f3460);color:white;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,0.3);}
+.hdr-left{display:flex;align-items:center;gap:11px}
+.back-btn{background:rgba(255,255,255,0.12);border:none;color:white;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hdr-title{font-size:16px;font-weight:700}
+.hdr-sub{font-size:11px;opacity:0.6;margin-top:1px}
+.cart-btn{background:#e74c3c;border:none;color:white;padding:8px 15px;border-radius:50px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.cart-count{background:white;color:#e74c3c;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
+
+/* ── STEP PAGES (full screen each) ── */
+.step-page{display:none;min-height:calc(100vh - 64px);padding-bottom:90px}
+.step-page.active{display:block}
+
+/* ── STEP 1: CATEGORIES ── */
+#step-cats{padding:18px 16px 100px}
+.pg-title{font-size:18px;font-weight:700;color:#2c3e50;margin-bottom:16px}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:13px;max-width:900px}
+.cat-card{background:white;border-radius:16px;padding:22px 14px;text-align:center;cursor:pointer;transition:.22s;box-shadow:0 2px 10px rgba(0,0,0,.07);border:2px solid transparent;position:relative;overflow:hidden;}
+.cat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--c,#e74c3c)}
+.cat-card:active{transform:scale(.96)}
+.cat-card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.12)}
+.cat-icon{font-size:38px;margin-bottom:9px;display:block}
+.cat-name{font-size:13px;font-weight:700;color:#2c3e50;margin-bottom:3px}
+.cat-count{font-size:11px;color:#aaa}
+
+/* ── STEP 2: ITEMS ── */
+#step-items{padding-bottom:100px}
+.items-hdr{background:white;padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #eee;position:sticky;top:62px;z-index:90;}
+.back-cats-btn{background:#f0f0f0;border:none;padding:7px 13px;border-radius:50px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:#555;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.back-cats-btn:hover{background:#e74c3c;color:white}
+.items-cat-title{font-size:15px;font-weight:700;color:#2c3e50}
+.search-wrap{padding:11px 16px;background:white;border-bottom:1px solid #eee}
+.search-input{width:100%;padding:10px 14px;border:2px solid #e9ecef;border-radius:50px;font-family:'Poppins',sans-serif;font-size:14px;}
+.search-input:focus{outline:none;border-color:#e74c3c}
+.items-body{max-width:900px;margin:0 auto;padding:14px 16px}
+.menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+.menu-item{background:white;border-radius:16px;overflow:hidden;transition:.22s;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1px solid #f0f0f0;}
+.menu-item:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.11)}
+.item-img{width:100%;height:120px;object-fit:cover}
+.item-no-img{width:100%;height:90px;background:linear-gradient(135deg,#f8f9fa,#e9ecef);display:flex;align-items:center;justify-content:center;font-size:32px}
+.item-body{padding:11px 13px}
+.type-dot{width:11px;height:11px;border-radius:2px;display:inline-block;margin-right:5px;border:1px solid;flex-shrink:0}
+.veg-dot{background:#d4edda;border-color:#27ae60}.nonveg-dot{background:#f8d7da;border-color:#e74c3c}
+.item-name{font-size:13px;font-weight:600;color:#2c3e50}
+.item-desc{font-size:11px;color:#888;margin:4px 0 8px;line-height:1.4}
+.item-footer{display:flex;align-items:center;justify-content:space-between}
+.item-price{font-size:15px;font-weight:700;color:#e74c3c}
+.prep{font-size:10px;color:#aaa}
+.feat-badge{background:#fff3cd;color:#856404;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;margin-left:5px}
+.add-btn{background:#e74c3c;color:white;border:none;border-radius:50px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;}
+.qty-ctrl{display:flex;align-items:center;gap:7px}
+.qty-btn{width:28px;height:28px;border-radius:50%;border:2px solid #e74c3c;background:white;color:#e74c3c;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.qty-btn:hover{background:#e74c3c;color:white}
+.qty-val{font-weight:700;min-width:18px;text-align:center;color:#2c3e50}
+
+/* ── STEP 3: CART ── */
+#step-cart{padding:0}
+.cart-page{max-width:600px;margin:0 auto;padding:16px 16px 20px}
+.cart-section-title{font-size:14px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px;padding:0 2px}
+/* customer info */
+.cust-bar{background:white;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:4px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.cust-avatar{width:42px;height:42px;background:linear-gradient(135deg,#3498db,#2980b9);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;flex-shrink:0;}
+.cust-name{font-size:15px;font-weight:700;color:#2c3e50}
+.cust-phone{font-size:12px;color:#888;margin-top:2px}
+/* cart items */
+.cart-items-box{background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.cart-item-row{display:flex;align-items:center;padding:13px 16px;border-bottom:1px solid #f5f5f5;gap:10px;}
+.cart-item-row:last-child{border:none}
+.ci-name{flex:1;font-size:14px;font-weight:500;color:#2c3e50}
+.ci-price{font-size:13px;font-weight:700;color:#e74c3c;min-width:60px;text-align:right}
+.empty-cart-msg{padding:40px;text-align:center;color:#bbb}
+.empty-cart-msg .ei{font-size:44px;margin-bottom:10px}
+/* totals */
+.totals-box{background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.t-row{display:flex;justify-content:space-between;font-size:13px;color:#666;padding:5px 0}
+.t-grand{font-size:18px;font-weight:800;color:#2c3e50;padding-top:10px;margin-top:6px;border-top:2px solid #f0f0f0}
+.t-grand span:last-child{color:#e74c3c}
+/* special note */
+.note-box{background:white;border-radius:14px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.note-input{width:100%;border:2px solid #e9ecef;border-radius:10px;padding:10px 13px;font-family:'Poppins',sans-serif;font-size:14px;resize:none;}
+.note-input:focus{outline:none;border-color:#e74c3c}
+/* place order btn */
+.place-btn{width:100%;padding:17px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;border-radius:14px;font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(231,76,60,.4);margin-top:14px;}
+.place-btn:disabled{opacity:.65}
+/* discount */
+.disc-sel{width:100%;padding:10px 13px;border:2px solid #e9ecef;border-radius:10px;font-family:'Poppins',sans-serif;font-size:14px;}
+.disc-sel:focus{outline:none;border-color:#e74c3c}
+
+
+/* ── CATS CART BAR ── */
+.cats-cart-bar{position:fixed;bottom:0;left:0;right:0;z-index:150;background:linear-gradient(135deg,#e74c3c,#c0392b);padding:13px 20px;display:none;align-items:center;justify-content:space-between;box-shadow:0 -4px 20px rgba(231,76,60,.4);cursor:pointer;}
+.cats-cart-bar.on{display:flex}
+/* ── CART BAR (sticky bottom on items page) ── */
+.cart-bar{position:fixed;bottom:0;left:0;right:0;z-index:150;background:linear-gradient(135deg,#e74c3c,#c0392b);padding:13px 20px;display:none;align-items:center;justify-content:space-between;box-shadow:0 -4px 20px rgba(231,76,60,.4);cursor:pointer;}
+.cart-bar.on{display:flex}
+.cb-left{display:flex;align-items:center;gap:10px}
+.cb-badge{background:white;color:#e74c3c;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+.cb-label{color:white;font-weight:700;font-size:14px}
+.cb-sub{color:rgba(255,255,255,.75);font-size:11px}
+.cb-total{color:white;font-weight:800;font-size:17px}
+
+@keyframes mlcBlink {0%,100%{opacity:1}50%{opacity:.15}}
+
+/* ── COMBO CARD ── */
+.combo-card{background:white;border-radius:16px;padding:0;text-align:center;cursor:pointer;transition:.22s;box-shadow:0 2px 10px rgba(0,0,0,.07);border:2px solid transparent;position:relative;overflow:hidden;}
+.combo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:#9b59b6}
+.combo-card:active{transform:scale(.96)}
+.combo-card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.12)}
+.combo-img{width:100%;height:100px;object-fit:cover}
+.combo-no-img{width:100%;height:80px;background:linear-gradient(135deg,#f3e5ff,#e8d5ff);display:flex;align-items:center;justify-content:center;font-size:34px}
+.combo-body{padding:10px 12px 14px}
+.combo-name{font-size:13px;font-weight:700;color:#2c3e50;margin-bottom:2px}
+.combo-price{font-size:14px;font-weight:800;color:#9b59b6}
+.combo-badge{position:absolute;top:8px;right:8px;background:#9b59b6;color:white;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px}
+
+/* ── STEP 4: COMBO DETAIL ── */
+#step-combo{padding-bottom:120px}
+.combo-detail-hero{position:relative}
+.combo-detail-img{width:100%;height:200px;object-fit:cover}
+.combo-detail-no-img{width:100%;height:160px;background:linear-gradient(135deg,#f3e5ff,#9b59b6);display:flex;align-items:center;justify-content:center;font-size:72px}
+.combo-detail-body{padding:18px 16px}
+.combo-detail-name{font-size:22px;font-weight:800;color:#2c3e50;margin-bottom:4px}
+.combo-detail-desc{font-size:13px;color:#888;margin-bottom:14px;line-height:1.5}
+.combo-detail-price{font-size:24px;font-weight:800;color:#9b59b6;margin-bottom:18px}
+.combo-items-title{font-size:13px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.combo-item-row{display:flex;align-items:center;gap:12px;background:white;border-radius:12px;padding:10px 12px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.combo-item-img{width:44px;height:44px;border-radius:9px;object-fit:cover;flex-shrink:0}
+.combo-item-no-img{width:44px;height:44px;border-radius:9px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.combo-item-name{font-size:13px;font-weight:600;color:#2c3e50;flex:1}
+.combo-item-qty{font-size:12px;color:#888;margin-top:2px}
+.combo-add-btn{position:fixed;bottom:0;left:0;right:0;padding:14px 18px;background:linear-gradient(135deg,#9b59b6,#8e44ad);display:flex;align-items:center;justify-content:space-between;box-shadow:0 -4px 18px rgba(155,89,182,.4);z-index:120}
+.combo-add-btn-label{color:white;font-weight:700;font-size:15px}
+.combo-add-btn-price{color:white;font-weight:800;font-size:18px}
+
+/* ── "ADD MORE?" MODAL ── */
+.addmore-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.addmore-overlay.show{display:flex}
+.addmore-sheet{background:white;border-radius:22px 22px 0 0;padding:24px 20px 32px;width:100%;max-width:500px;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.addmore-icon{font-size:48px;text-align:center;margin-bottom:10px}
+.addmore-title{font-size:18px;font-weight:800;color:#2c3e50;text-align:center;margin-bottom:6px}
+.addmore-sub{font-size:13px;color:#888;text-align:center;margin-bottom:20px;line-height:1.5}
+.addmore-item-name{font-size:15px;font-weight:700;color:#e74c3c;text-align:center;margin-bottom:20px}
+.addmore-btns{display:flex;gap:10px}
+.addmore-yes{flex:1;padding:14px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;border-radius:13px;font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.addmore-no{flex:1;padding:14px;background:#f0f0f0;color:#555;border:none;border-radius:13px;font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;cursor:pointer}
+
+/* ── ORDER SUCCESS OVERLAY ── */
+.order-success-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e,#0f3460);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;color:white}
+.order-success-overlay.show{display:flex}
+.os-icon{font-size:72px;margin-bottom:16px;animation:osBounce .6s ease}
+@keyframes osBounce{0%{transform:scale(.5)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.os-title{font-size:24px;font-weight:800;margin-bottom:8px}
+.os-sub{font-size:14px;opacity:.65;margin-bottom:24px}
+.os-num{font-size:13px;opacity:.5}
+</style>
+{% endblock %}
+
+{% block content %}
+<header>
+  <div class="hdr-left">
+    <button class="back-btn" onclick="onBack()">&#x2190;</button>
+    <div>
+      <div class="hdr-title">&#x2615; Brothers Cafe</div>
+      <div class="hdr-sub" id="hdrSub">{% if reorder_order %}&#x2795; Adding extra items{% elif is_takeaway %}&#x1F6CD; Takeaway{% else %}&#x1F37D; Dine In{% endif %}</div>
+    </div>
+  </div>
+  <button class="cart-btn" id="cartHeaderBtn" onclick="goToCart()" style="display:none">
+    &#x1F6D2; Cart <span class="cart-count" id="cartCount">0</span>
+  </button>
+</header>
+
+{% if reorder_order %}
+<div style="background:linear-gradient(135deg,#e67e22,#d35400);color:white;padding:10px 18px;font-size:13px;font-weight:600;">
+  &#x2795; Adding More Items &mdash; Order #{{ reorder_order.order_number }}
+</div>
+{% endif %}
+
+<!-- ══ STEP 1: CATEGORIES ══ -->
+<div class="step-page active" id="step-cats">
+  <div style="padding:18px 16px 100px">
+
+    {% if active_order %}{% with o=active_order.order %}
+    <!-- LIVE ORDER MINI-CARD -->
+    <div style="margin-bottom:18px">
+      <div class="pg-title" style="margin-bottom:10px">&#x1F4E1; Live Order</div>
+      <div id="menuLiveCard" style="background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:18px;padding:16px;color:white">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(231,76,60,.25);border:1px solid rgba(231,76,60,.4);color:#ff9090;padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600">
+            <span id="mlcDot" style="width:6px;height:6px;background:#e74c3c;border-radius:50%;display:inline-block;animation:mlcBlink 1s infinite"></span>
+            Live Order
+          </div>
+          <div style="font-size:11px;opacity:.5">#{{ o.order_number }}</div>
+        </div>
+        <!-- Mini progress bar -->
+        <div style="display:flex;align-items:center;margin-bottom:12px" id="mlcProg">
+          <div class="mlc-ps" data-s="pending" style="display:flex;flex-direction:column;align-items:center;flex:1"><div class="mlc-pd" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:11px">&#x1F4CB;</div><div class="mlc-pl" style="font-size:8px;color:rgba(255,255,255,.4);margin-top:3px">Got it</div></div>
+          <div class="mlc-line" style="flex:1;height:2px;background:rgba(255,255,255,.1);max-width:18px" id="mpl1"></div>
+          <div class="mlc-ps" data-s="accepted" style="display:flex;flex-direction:column;align-items:center;flex:1"><div class="mlc-pd" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:11px">&#x2705;</div><div class="mlc-pl" style="font-size:8px;color:rgba(255,255,255,.4);margin-top:3px">Accepted</div></div>
+          <div class="mlc-line" style="flex:1;height:2px;background:rgba(255,255,255,.1);max-width:18px" id="mpl2"></div>
+          <div class="mlc-ps" data-s="preparing" style="display:flex;flex-direction:column;align-items:center;flex:1"><div class="mlc-pd" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:11px">&#x1F468;&#x200D;&#x1F373;</div><div class="mlc-pl" style="font-size:8px;color:rgba(255,255,255,.4);margin-top:3px">Cooking</div></div>
+          <div class="mlc-line" style="flex:1;height:2px;background:rgba(255,255,255,.1);max-width:18px" id="mpl3"></div>
+          <div class="mlc-ps" data-s="ready" style="display:flex;flex-direction:column;align-items:center;flex:1"><div class="mlc-pd" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:11px">&#x1F514;</div><div class="mlc-pl" style="font-size:8px;color:rgba(255,255,255,.4);margin-top:3px">Ready</div></div>
+        </div>
+        <!-- Status + total -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span id="mlcIcon" style="font-size:26px">&#x23F3;</span>
+          <div>
+            <div id="mlcTitle" style="font-size:14px;font-weight:700">{{ o.get_status_display }}</div>
+            <div id="mlcDesc" style="font-size:11px;opacity:.55">Tracking your order...</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:10px;opacity:.5">Total</div>
+            <div id="mlcTot" style="font-size:17px;font-weight:800;color:#ff9090">&#x20B9;{{ active_order.combined_total|floatformat:0 }}</div>
+          </div>
+        </div>
+        <!-- Action buttons -->
+        <div style="display:flex;gap:8px" id="mlcActions">
+          <a href="/customer/history/" style="flex:1;padding:10px;background:rgba(255,255,255,.12);color:white;border-radius:10px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;text-align:center;text-decoration:none;border:1px solid rgba(255,255,255,.2)">&#x1F4CB; Full Details</a>
+        </div>
+      </div>
+    </div>
+    {% endwith %}{% endif %}
+
+    {% if past_orders %}
+    <!-- ORDER HISTORY -->
+    <div style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="pg-title" style="margin-bottom:0">&#x1F4CB; Recent Orders</div>
+        <a href="/customer/home/#history" style="font-size:11px;color:#e74c3c;font-weight:600;text-decoration:none" onclick="window.location.href='/customer/home/#history';return false;">See all ›</a>
+      </div>
+      {% for entry in past_orders %}{% with order=entry.order %}
+      <div style="background:white;border-radius:14px;margin-bottom:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)">
+        <div onclick="mnuTogHist('{{ order.id }}')" style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#2c3e50">&#x1F4CB; #{{ order.order_number }}</div>
+            <div style="font-size:11px;color:#aaa;margin-top:2px">{{ order.created_at|date:"d M Y, h:i A" }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;{% if order.status == 'completed' %}background:#d4edda;color:#27ae60{% else %}background:#fde8e8;color:#e74c3c{% endif %}">
+              {% if order.status == 'completed' %}&#x2705; Done{% else %}&#x274C; Cancelled{% endif %}
+            </span>
+            <span id="mhchev-{{ order.id }}" style="color:#ccc;font-size:12px;transition:.2s">&#x2303;</span>
+          </div>
+        </div>
+        <div id="mhbody-{{ order.id }}" style="display:none;padding:9px 14px 13px;border-top:1px solid #f5f5f5">
+          {% for item in entry.all_items %}
+          <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:#555;border-bottom:1px solid #f9f9f9">
+            <span>{{ item.quantity }}&#xD7; {{ item.menu_item.name }}</span>
+            <span style="font-weight:600;color:#e74c3c">&#x20B9;{{ item.total_price }}</span>
+          </div>
+          {% endfor %}
+          <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding-top:8px;margin-top:5px;border-top:2px solid #f0f0f0;color:#2c3e50">
+            <span>Total</span><span style="color:#e74c3c">&#x20B9;{{ entry.combined_total|floatformat:0 }}</span>
+          </div>
+          {% if order.status == 'completed' %}
+          <a href="/order/{{ order.id }}/bill/" style="display:block;margin-top:9px;text-align:center;font-size:12px;color:#3498db;font-weight:600;text-decoration:none">&#x1F9FE; View Bill</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endwith %}{% endfor %}
+    </div>
+    {% endif %}
+
+    {% if combos %}
+    <div class="pg-title" style="margin-bottom:10px">&#x1F381; Combos</div>
+    <div class="cat-grid" style="margin-bottom:20px">
+      {% for combo in combos %}
+      <div class="combo-card" onclick="openCombo({{ combo.id }})">
+        {% if combo.image %}<img src="{{ combo.image.url }}" class="combo-img">{% else %}<div class="combo-no-img">{{ combo.icon|default:"🎁" }}</div>{% endif %}
+        <div class="combo-badge">COMBO</div>
+        <div class="combo-body">
+          <div class="combo-name">{{ combo.name }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="pg-title">&#x1F4CB; Choose a Category</div>
+    <div class="cat-grid">
+      {% for cat in categories %}{% if cat.items.count > 0 %}
+      <div class="cat-card" onclick="selectCat('{{ cat.id }}','{{ cat.name|escapejs }}','{{ cat.icon|default:'🍽️'|escapejs }}')"
+           style="--c:{% cycle '#e74c3c' '#3498db' '#27ae60' '#9b59b6' '#e67e22' '#1abc9c' '#f39c12' '#e91e63' %}">
+        <span class="cat-icon">{{ cat.icon|default:"&#x1F37D;" }}</span>
+        <div class="cat-name">{{ cat.name }}</div>
+        <div class="cat-count">{{ cat.items.count }} items</div>
+      </div>
+      {% endif %}{% endfor %}
+    </div>
+  </div>
+</div>
+
+  <!-- sticky cart bar on categories page -->
+  <div class="cats-cart-bar" id="catsCartBar" onclick="goToCart()">
+    <div class="cb-left">
+      <div class="cb-badge" id="ccbCount">0</div>
+      <div><div class="cb-label" id="ccbLabel">View Cart</div><div class="cb-sub" id="ccbSub">0 items</div></div>
+    </div>
+    <div class="cb-total" id="ccbTotal">&#x20B9;0</div>
+  </div>
+
+<!-- ══ STEP 4: COMBO DETAIL ══ -->
+<div class="step-page" id="step-combo">
+  <div id="comboDetailContent"></div>
+  <div class="combo-add-btn" id="comboAddBar" style="display:none" onclick="addComboToCart()">
+    <div>
+      <div class="combo-add-btn-label">&#x1F381; Add Combo to Cart</div>
+      <div style="color:rgba(255,255,255,.65);font-size:11px" id="comboAddSub">Includes all items</div>
+    </div>
+    <div class="combo-add-btn-price" id="comboAddPrice">&#x20B9;0</div>
+  </div>
+</div>
+
+<!-- "Add More Items?" modal -->
+<div class="addmore-overlay" id="addMoreOverlay" onclick="dismissAddMore(event)">
+  <div class="addmore-sheet">
+    <div class="addmore-icon" id="addMoreIcon">🛒</div>
+    <div class="addmore-title" id="addMoreTitle">Add to Current Order?</div>
+    <div class="addmore-sub" id="addMoreSub">Your order is still active. Adding <strong id="addMoreItemName">this item</strong> will be included in the <strong>same bill</strong>.</div>
+    <div class="addmore-btns">
+      <button class="addmore-no" onclick="dismissAddMore()">✕ No</button>
+      <button class="addmore-yes" id="addMoreYesBtn" onclick="confirmAddMore()">✓ Yes, Add to Bill!</button>
+    </div>
+  </div>
+</div>
+
+<!-- Order success overlay -->
+<div class="order-success-overlay" id="orderSuccessOverlay">
+  <div class="os-icon">🎉</div>
+  <div class="os-title">Order Placed!</div>
+  <div class="os-sub">Taking you to live tracking…</div>
+  <div class="os-num" id="osOrderNum"></div>
+</div>
+
+<!-- ══ STEP 2: ITEMS ══ -->
+<div class="step-page" id="step-items">
+  <div class="items-hdr">
+    <button class="back-cats-btn" onclick="goTo(1)">&#x2190; Categories</button>
+    <span class="items-cat-title" id="catTitle"></span>
+  </div>
+  <div class="search-wrap">
+    <input type="text" class="search-input" id="searchInput" placeholder="&#x1F50D; Search items..." oninput="searchItems()">
+  </div>
+  <div class="items-body">
+    <div class="menu-grid" id="itemsGrid"></div>
+    <div id="noItems" style="display:none;text-align:center;padding:40px;color:#aaa">
+      <div style="font-size:40px;margin-bottom:10px">&#x1F50D;</div>
+      <div style="font-weight:600">No items found</div>
+    </div>
+  </div>
+  <!-- sticky cart bar shown when items in cart -->
+  <div class="cart-bar" id="cartBar" onclick="goToCart()">
+    <div class="cb-left">
+      <div class="cb-badge" id="cbCount">0</div>
+      <div><div class="cb-label" id="cbLabel">View Cart</div><div class="cb-sub" id="cbSub">0 items</div></div>
+    </div>
+    <div class="cb-total" id="cbTotal">&#x20B9;0</div>
+  </div>
+</div>
+
+<!-- ══ STEP 3: CART ══ -->
+<div class="step-page" id="step-cart">
+  <div class="cart-page">
+    <!-- Customer info (read-only from session) -->
+    <div class="cart-section-title">&#x1F464; Your Details</div>
+    <div class="cust-bar">
+      <div class="cust-avatar">&#x1F464;</div>
+      <div>
+        <div class="cust-name">{{ request.session.customer_name|default:"Guest" }}</div>
+        <div class="cust-phone">{{ request.session.customer_phone|default:"" }}</div>
+      </div>
+    </div>
+
+    <!-- Cart items -->
+    <div class="cart-section-title">&#x1F6D2; Your Order</div>
+    <div class="cart-items-box" id="cartItemsBox">
+      <div class="empty-cart-msg"><div class="ei">&#x1F6D2;</div>Cart is empty</div>
+    </div>
+
+    <!-- Totals -->
+    <div class="cart-section-title">&#x1F4B0; Bill Summary</div>
+    <div class="totals-box" id="totalsBox" style="display:none">
+      <div class="t-row"><span>Subtotal</span><span id="cartSub">&#x20B9;0</span></div>
+      {% if discounts and not reorder_order %}
+      <div class="t-row" style="flex-direction:column;gap:5px">
+        <span style="color:#555;font-weight:600">&#x1F3F7; Discount</span>
+        <select class="disc-sel" id="discSel" onchange="applyDisc()">
+          <option value="0">No Discount</option>
+          {% for d in discounts %}<option value="{{ d.percent }}">{{ d.name }} — {{ d.percent }}% off</option>{% endfor %}
+        </select>
+      </div>
+      {% elif reorder_order and reorder_order.discount_percent > 0 %}
+      <div class="t-row">
+        <span style="color:#555;font-weight:600">&#x1F3F7; Discount (from original order)</span>
+        <span style="color:#27ae60;font-weight:700">{{ reorder_order.discount_percent }}% off</span>
+      </div>
+      <input type="hidden" id="discSel" value="{{ reorder_order.discount_percent }}">
+      {% endif %}
+      <div class="t-row" id="discRow" style="display:none;color:#27ae60"><span>Discount</span><span id="discAmt">-&#x20B9;0</span></div>
+      <div class="t-row t-grand"><span>Total</span><span id="cartTot">&#x20B9;0</span></div>
+    </div>
+
+    <!-- Special note - optional toggle -->
+    <div class="cart-section-title" id="noteToggleBtn" onclick="toggleNote()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+      <span>&#x1F4DD; Special Instructions <span style="font-size:11px;font-weight:400;color:#999">(optional)</span></span>
+      <span id="noteArrow" style="font-size:12px;color:#aaa;transition:transform .2s">&#x25BC;</span>
+    </div>
+    <div class="note-box" id="noteBox" style="display:none">
+      <textarea class="note-input" id="custNote" rows="2" placeholder="Any requests? e.g. less spicy, no onion..."></textarea>
+    </div>
+
+    <!-- Place Order -->
+    <button class="place-btn" id="placeBtn" onclick="placeOrder(this)">
+      {% if reorder_order %}&#x2795; Place Extra Order{% else %}&#x1F37D; Place Order{% endif %}
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── CONSTANTS ──────────────────────────────────────────────────
+const TABLE_ID      = {% if table %}{{ table.id }}{% else %}null{% endif %};
+const IS_TAKEAWAY   = {% if is_takeaway %}true{% else %}false{% endif %};
+const ORDER_TYPE    = IS_TAKEAWAY ? 'takeaway' : 'dine_in';
+const PARENT_ORDER  = {% if reorder_order %}{{ reorder_order.id }}{% else %}null{% endif %};
+const CUST_NAME     = '{{ request.session.customer_name|escapejs }}';
+const CUST_PHONE    = '{{ request.session.customer_phone|escapejs }}';
+const MENU_URL      = '{% if table %}/table/{{ table.id }}/menu/{% else %}/takeaway/{% endif %}';
+
+// Store customer details for live order page
+try {
+  if(CUST_NAME)  sessionStorage.setItem('bc_cust_name',  CUST_NAME);
+  if(CUST_PHONE) sessionStorage.setItem('bc_cust_phone', CUST_PHONE);
+  if(TABLE_ID)   sessionStorage.setItem('bc_table_id',   TABLE_ID);
+} catch(e){}
+
+// ── CATEGORY DATA ──────────────────────────────────────────────
+const CATS = {
+  {% for cat in categories %}{% if cat.items.count > 0 %}
+  "{{ cat.id }}":{name:"{{ cat.name|escapejs }}",icon:"{{ cat.icon|default:'🍽️'|escapejs }}",items:[
+    {% for item in cat.items.all %}{% if item.is_available %}
+    {id:{{ item.id }},name:"{{ item.name|escapejs }}",desc:"{{ item.description|truncatechars:65|escapejs }}",
+     price:{{ item.price }},type:"{{ item.item_type }}",feat:{% if item.is_featured %}true{% else %}false{% endif %},
+     prep:{{ item.preparation_time }},img:{% if item.image %}"{{ item.image.url }}"{% else %}null{% endif %}},
+    {% endif %}{% endfor %}
+  ]},
+  {% endif %}{% endfor %}
+};
+
+// ── STATE ──────────────────────────────────────────────────────
+let cart = {};
+try {
+  var cartJson = '{{ cart|escapejs }}';
+  if (cartJson && cartJson !== '{}' && cartJson !== '') {
+    cart = JSON.parse(cartJson);
+    console.log('Cart parsed from backend:', cart);
+  }
+} catch(e) {
+  console.error('Failed to parse cart JSON:', e);
+  cart = {};
+}
+let discPct = {% if reorder_order and reorder_order.discount_percent > 0 %}{{ reorder_order.discount_percent }}{% else %}0{% endif %};
+let step = 1;
+// Restore cart from session storage (so back from live order preserves cart)
+try { var _s = sessionStorage.getItem('bc_cart'); if(_s) { var restored = JSON.parse(_s); if (restored && typeof restored === 'object') { Object.assign(cart, restored); console.log('Cart restored from session:', cart); } } } catch(e){ console.error('Session restore failed:', e); }
+
+// ── NAVIGATION ─────────────────────────────────────────────────
+// History stack: step1=cats, step2=items, step3=cart
+// Phone back button: cart→items, items→cats, cats→logout
+// Push a sentinel entry BEFORE our page so back from step=1 is catchable
+history.replaceState({step:0},'','');   // sentinel: "before this page"
+history.pushState({step:1},'','');      // current: categories
+
+window.addEventListener('popstate', function(e){
+  var s = e.state ? e.state.step : 0;
+  if(s === 0){
+    // Back pressed from categories — go to live order tracker
+    window.location.href = '/customer/home/';
+  } else {
+    showStep(s, false);
+  }
+});
+
+function goTo(n){
+  if(n === step) return;
+  history.pushState({step:n},'','');
+  showStep(n, true);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function showStep(n, smooth){
+  document.querySelectorAll('.step-page').forEach(function(el){ el.classList.remove('active'); });
+  step = n;
+  if(n===1) document.getElementById('step-cats').classList.add('active');
+  else if(n===2) document.getElementById('step-items').classList.add('active');
+  else if(n===3) document.getElementById('step-cart').classList.add('active');
+  else if(n===4) document.getElementById('step-combo').classList.add('active');
+  document.getElementById('cartHeaderBtn').style.display = (n===2) ? 'flex' : 'none';
+  updateCartBar();
+  if(smooth!==false) window.scrollTo({top:0,behavior:'smooth'});
+  // Update header subtitle
+  var sub = document.getElementById('hdrSub');
+  if(sub){
+    if(n===4) sub.textContent = '🎁 Combo Deal';
+    else if(n===3) sub.textContent = '🛒 Your Cart';
+    else if(n===2) sub.textContent = '📋 Menu Items';
+    {% if reorder_order %}else sub.textContent = '➕ Adding extra items';
+    {% elif is_takeaway %}else sub.textContent = '🛍️ Takeaway';
+    {% else %}else sub.textContent = '🍽️ Dine In';{% endif %}
+  }
+}
+
+function onBack(){
+  if(step === 4){ goTo(1); }        // combo detail → categories
+  else if(step === 3){ goTo(2); }   // cart → items
+  else if(step === 2){ goTo(1); }   // items → categories
+  else {
+    // categories → go to customer home (live order tracker)
+    // The customer is logged in since they're on the menu page, so this is always safe
+    window.location.href = '/customer/home/';
+  }
+}
+
+function selectCat(id, name, icon){
+  var cat = CATS[id]; if(!cat) return;
+  document.getElementById('catTitle').textContent = icon + ' ' + name;
+  document.getElementById('searchInput').value = '';
+  renderItems(cat.items);
+  // Show items step then scroll smoothly to top of items grid
+  if(step !== 2){
+    showStep(2, false);
+    history.pushState({step:2},'','');
+  }
+  setTimeout(function(){
+    var grid = document.getElementById('itemsGrid');
+    if(grid) grid.scrollIntoView({behavior:'smooth', block:'start'});
+    else window.scrollTo({top:0, behavior:'smooth'});
+  }, 60);
+}
+
+function goToCart(){
+  renderCartPage();
+  goTo(3);
+}
+
+// ── RENDER ITEMS ───────────────────────────────────────────────
+function renderItems(items){
+  var grid = document.getElementById('itemsGrid');
+  var noMsg = document.getElementById('noItems');
+  if(!items.length){ grid.innerHTML=''; noMsg.style.display='block'; return; }
+  noMsg.style.display='none';
+  grid.innerHTML = items.map(function(item){
+    var tc = (item.type==='veg'||item.type==='vegan') ? 'veg-dot' : 'nonveg-dot';
+    var img = item.img
+      ? '<img src="'+item.img+'" class="item-img" loading="lazy">'
+      : '<div class="item-no-img">'+(item.type==='beverage'?'🥤':item.type==='nonveg'?'🍗':'🥗')+'</div>';
+    return '<div class="menu-item" data-name="'+item.name.toLowerCase()+'">'
+      +img+'<div class="item-body">'
+      +'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px;margin-bottom:4px">'
+      +'<span class="type-dot '+tc+'"></span>'
+      +'<span class="item-name">'+item.name+'</span>'
+      +(item.feat?'<span class="feat-badge">&#x2B50; Popular</span>':'')
+      +'</div>'
+      +(item.desc?'<div class="item-desc">'+item.desc+'</div>':'')
+      +'<div class="item-footer"><div>'
+      +'<div class="item-price">&#x20B9;'+item.price+'</div>'
+      +'<div class="prep">&#x23F1; '+item.prep+' min</div>'
+      +'</div><div id="ctrl-'+item.id+'">'+ctrlHtml(item)+'</div>'
+      +'</div></div></div>';
+  }).join('');
+}
+
+function ctrlHtml(item){
+  if(cart[item.id] && cart[item.id].qty > 0){
+    return '<div class="qty-ctrl">'
+      +'<button class="qty-btn" onclick="chg('+item.id+',-1)">&#x2212;</button>'
+      +'<span class="qty-val">'+cart[item.id].qty+'</span>'
+      +'<button class="qty-btn" onclick="chg('+item.id+',1,\''+esc(item.name)+'\','+item.price+')">+</button></div>';
+  }
+  return '<button class="add-btn" onclick="chg('+item.id+',1,\''+esc(item.name)+'\','+item.price+')">+ Add</button>';
+}
+function esc(s){ return s.replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+function searchItems(){
+  var q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('#itemsGrid .menu-item').forEach(function(el){
+    el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+  });
+}
+
+// ── CART LOGIC ─────────────────────────────────────────────────
+// Live order state (updated by polling)
+var _liveOrderActive   = {% if active_order %}true{% else %}false{% endif %};
+var _liveOrderId       = {% if active_order %}{{ active_order.order.id }}{% else %}null{% endif %};
+var _liveOrderStatus   = '{% if active_order %}{{ active_order.order.status }}{% else %}{% endif %}';
+var _liveOrderComplete = (_liveOrderStatus === 'completed' || _liveOrderStatus === 'cancelled');
+
+// "Add more?" modal state
+var _pendingAdd = null;  // {id, name, price}
+var _cartLinkedToLive = {% if reorder_order %}true{% else %}false{% endif %};  // already in reorder mode
+
+function chg(id, delta, name, price){
+  // When adding a NEW item (not already in cart) and a live order exists → ask
+  if(delta > 0 && name && _liveOrderActive && !_liveOrderComplete && !_cartLinkedToLive && !cart[id]){
+    _pendingAdd = {id:id, name:name, price:price};
+    document.getElementById('addMoreItemName').textContent = '"' + name + '"';
+    // Show "same bill" modal
+    document.getElementById('addMoreTitle').textContent = 'Add to Current Order?';
+    document.getElementById('addMoreSub').innerHTML = 'Your order is still active. Adding <strong>"'+name+'"</strong> will be added to the <strong>same bill</strong>.';
+    document.getElementById('addMoreYesBtn').textContent = '✓ Yes, Same Bill!';
+    document.getElementById('addMoreOverlay').classList.add('show');
+    return;
+  }
+  _doChg(id, delta, name, price);
+}
+
+function _doChg(id, delta, name, price){
+  if(!cart[id] && delta > 0) cart[id] = {name:name, price:price, qty:0};
+  if(!cart[id]) return;
+  cart[id].qty += delta;
+  if(cart[id].qty <= 0) delete cart[id];
+  console.log('Cart after _doChg:', cart, 'cartCount:', cartCount());
+  saveCart(); updateCtrl(id); updateCartBar();
+  if(delta > 0 && name) showToast(name+' added!','success');
+}
+
+function confirmAddMore(){
+  document.getElementById('addMoreOverlay').classList.remove('show');
+  if(_pendingAdd){
+    // Mark cart as linked to live order → next adds go straight in, order goes as reorder
+    _cartLinkedToLive = true;
+    _doChg(_pendingAdd.id, 1, _pendingAdd.name, _pendingAdd.price);
+    _pendingAdd = null;
+    // Update place-order button to reflect extra order
+    var btn = document.getElementById('placeBtn');
+    if(btn && !btn.dataset.orig) btn.dataset.orig = btn.innerHTML;
+    if(btn) btn.innerHTML = '&#x2795; Add to Current Order (Same Bill)';
+  }
+}
+
+function dismissAddMore(e){
+  if(e && e.target !== document.getElementById('addMoreOverlay')) return;
+  document.getElementById('addMoreOverlay').classList.remove('show');
+  _pendingAdd = null;
+}
+
+function saveCart(){ try{ sessionStorage.setItem('bc_cart', JSON.stringify(cart)); }catch(e){} }
+
+function updateCtrl(id){
+  var el = document.getElementById('ctrl-'+id); if(!el) return;
+  var found = null;
+  for(var cid in CATS){ var f=CATS[cid].items.find(function(i){return i.id==id;}); if(f){found=f;break;} }
+  if(found) el.innerHTML = ctrlHtml(found);
+}
+
+function cartCount(){ return Object.values(cart).reduce(function(s,i){return s+i.qty;},0); }
+function cartSubtotal(){ return Object.values(cart).reduce(function(s,i){return s+i.price*i.qty;},0); }
+
+function updateCartBar(){
+  var count = Number(cartCount()) || 0;
+  var sub = cartSubtotal();
+  var tot = sub - sub*discPct/100;
+  console.log('updateCartBar: count=', count, 'cart=', cart, 'step=', step);
+  var bar = document.getElementById('cartBar');
+  var catsBar = document.getElementById('catsCartBar');
+  var hBtn = document.getElementById('cartHeaderBtn');
+  var cCount = document.getElementById('cartCount');
+  var cbLabel = document.getElementById('cbLabel');
+  var ccbLabel = document.getElementById('ccbLabel');
+
+  if(bar){
+    if(count > 0 && step === 2){
+      bar.classList.add('on');
+      document.getElementById('cbCount').textContent=count;
+      if(cbLabel) cbLabel.textContent='View Cart';
+      document.getElementById('cbSub').textContent=count+' item'+(count!==1?'s':'');
+      document.getElementById('cbTotal').textContent='₹'+tot.toFixed(0);
+    } else {
+      bar.classList.remove('on');
+    }
+  }
+  if(catsBar){
+    if(count > 0 && step === 1){
+      catsBar.classList.add('on');
+      document.getElementById('ccbCount').textContent=count;
+      if(ccbLabel) ccbLabel.textContent='View Cart';
+      document.getElementById('ccbSub').textContent=count+' item'+(count!==1?'s':'');
+      document.getElementById('ccbTotal').textContent='₹'+tot.toFixed(0);
+    } else {
+      catsBar.classList.remove('on');
+    }
+  }
+  if(hBtn){
+    hBtn.style.display = (count > 0 && step === 2) ? 'flex' : 'none';
+    if(cCount) cCount.textContent = count;
+  }
+}
+
+function applyDisc(){
+  var el = document.getElementById('discSel');
+  discPct = el ? (parseFloat(el.value)||0) : 0;
+  renderCartPage();
+}
+
+// ── RENDER CART PAGE ───────────────────────────────────────────
+function renderCartPage(){
+  var box = document.getElementById('cartItemsBox');
+  var totBox = document.getElementById('totalsBox');
+  var count = cartCount(), sub = cartSubtotal();
+  var disc = sub*discPct/100, tot = sub-disc;
+  console.log('=== RENDER CART PAGE ===');
+  console.log('cart object:', cart);
+  console.log('cart keys:', Object.keys(cart));
+  console.log('cart entries:', Object.entries(cart));
+  console.log('cartCount():', count);
+  console.log('cartSubtotal():', sub);
+
+  if(count === 0){
+    box.innerHTML = '<div class="empty-cart-msg"><div class="ei">&#x1F6D2;</div>Cart is empty — go back and add items</div>';
+    totBox.style.display = 'none';
+    return;
+  }
+  box.innerHTML = Object.entries(cart).map(function(e){
+    var id=e[0], item=e[1];
+    return '<div class="cart-item-row">'
+      +'<span class="ci-name">'+item.name+'</span>'
+      +'<div class="qty-ctrl">'
+      +'<button class="qty-btn" onclick="chg('+id+',-1);renderCartPage()">&#x2212;</button>'
+      +'<span class="qty-val">'+item.qty+'</span>'
+      +'<button class="qty-btn" onclick="chg('+id+',1,\''+esc(item.name)+'\','+item.price+');renderCartPage()">+</button>'
+      +'</div>'
+      +'<span class="ci-price">&#x20B9;'+(item.price*item.qty).toFixed(0)+'</span>'
+      +'</div>';
+  }).join('');
+
+  totBox.style.display = 'block';
+  document.getElementById('cartSub').textContent = '₹'+sub.toFixed(0);
+  document.getElementById('cartTot').textContent = '₹'+tot.toFixed(0);
+  if(discPct > 0){
+    document.getElementById('discRow').style.display='flex';
+    document.getElementById('discAmt').textContent = '-₹'+disc.toFixed(0);
+  } else { document.getElementById('discRow').style.display='none'; }
+  updateCartBar();
+}
+
+// ── PLACE ORDER ────────────────────────────────────────────────
+async function placeOrder(btn){
+  if(!CUST_NAME||!CUST_PHONE){
+    showToast('Session expired — please login again','error');
+    setTimeout(function(){ window.location.href='/customer/logout/'; },1500);
+    return;
+  }
+  var count = cartCount();
+  if(!count){ showToast('Your cart is empty — add items first','error'); return; }
+  var items = Object.entries(cart).map(function(e){
+    var key=e[0], item=e[1];
+    if(item.isCombo){ return {combo_id: item.comboId, qty: item.qty}; }
+    return {id: parseInt(key), qty: item.qty};
+  });
+  btn.disabled=true; btn.textContent='⏳ Placing order...';
+  try{
+    // Decide if this is a reorder (same bill) or a new order
+    // _cartLinkedToLive = customer confirmed "add to same bill"
+    // PARENT_ORDER = page was opened in explicit reorder mode
+    var effectiveParent = PARENT_ORDER || (_cartLinkedToLive && _liveOrderId && !_liveOrderComplete ? _liveOrderId : null);
+    var payload = {
+      table_id:TABLE_ID, customer_name:CUST_NAME, customer_phone:CUST_PHONE,
+      special_instructions: (document.getElementById('custNote').value||'').trim(),
+      items:items, discount_percent:discPct, order_type:ORDER_TYPE,
+    };
+    if(effectiveParent) payload.parent_order_id = effectiveParent;
+    var resp = await fetch('/order/place/',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')||''},
+      body:JSON.stringify(payload)
+    });
+    var data = await resp.json();
+    if(data.success){
+      // Clear cart fully
+      cart = {};
+      discPct = 0;
+      try { sessionStorage.removeItem('bc_cart'); } catch(e){}
+      // Show success overlay then redirect
+      var ov = document.getElementById('orderSuccessOverlay');
+      var on = document.getElementById('osOrderNum');
+      if(on) on.textContent = 'Order #' + (data.order_number || '');
+      if(ov) ov.classList.add('show');
+      setTimeout(function(){ window.location.href = '/customer/home/#live'; }, 1600);
+    } else {
+      showToast('Error: '+(data.error||'Could not place order'),'error');
+      btn.disabled=false;
+      btn.textContent = effectiveParent ? '➕ Place Extra Order' : '🍽️ Place Order';
+    }
+  } catch(e){
+    showToast('Connection error — try again','error');
+    btn.disabled=false;
+    btn.textContent = effectiveParent ? '➕ Place Extra Order' : '🍽️ Place Order';
+  }
+}
+
+function toggleNote(){
+  var box = document.getElementById('noteBox');
+  var arrow = document.getElementById('noteArrow');
+  if(!box) return;
+  if(box.style.display === 'none'){
+    box.style.display = 'block';
+    if(arrow) arrow.style.transform = 'rotate(180deg)';
+    box.querySelector('textarea').focus();
+  } else {
+    box.style.display = 'none';
+    if(arrow) arrow.style.transform = '';
+  }
+}
+
+function getCookie(n){ var v=document.cookie.match('(^|;) ?'+n+'=([^;]*)(;|$)'); return v?v[2]:null; }
+
+// Init: restore cart display
+updateCartBar();
+
+// ── COMBO DETAIL ────────────────────────────────────────────────
+var _currentCombo = null;
+
+async function openCombo(comboId){
+  try {
+    var r = await fetch('/combo/'+comboId+'/detail/');
+    var d = await r.json();
+    _currentCombo = d;
+    renderComboDetail(d);
+    goTo(4);
+  } catch(e) { showToast('Could not load combo','error'); }
+}
+
+function renderComboDetail(d){
+  var heroHtml = d.image
+    ? '<img src="'+d.image+'" class="combo-detail-img">'
+    : '<div class="combo-detail-no-img">'+d.icon+'</div>';
+  var itemsHtml = d.items.map(function(it){
+    var dot = (it.type==='veg'||it.type==='vegan') ? 'background:#d4edda;border-color:#27ae60' : 'background:#f8d7da;border-color:#e74c3c';
+    var imgHtml = it.image
+      ? '<img src="'+it.image+'" class="combo-item-img">'
+      : '<div class="combo-item-no-img">'+(it.type==='beverage'?'🥤':it.type==='nonveg'?'🍗':'🥗')+'</div>';
+    return '<div class="combo-item-row">'+imgHtml
+      +'<div style="flex:1"><div style="display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:2px;border:1px solid;display:inline-block;flex-shrink:0;'+dot+'"></span><span class="combo-item-name">'+it.name+'</span></div>'
+      +'<div class="combo-item-qty">Qty: '+it.qty+'</div></div>'
+      +'<div style="font-size:12px;font-weight:700;color:#9b59b6"></div></div>';
+  }).join('');
+
+  document.getElementById('comboDetailContent').innerHTML =
+    '<div class="combo-detail-hero">'+heroHtml+'</div>'
+    +'<div class="combo-detail-body">'
+    +'<div class="combo-detail-name">'+d.name+'</div>'
+    +(d.description ? '<div class="combo-detail-desc">'+d.description+'</div>' : '')
+    +'<div class="combo-items-title">Included in this combo</div>'
+    +itemsHtml
+    +'</div>';
+
+  var bar = document.getElementById('comboAddBar');
+  var priceEl = document.getElementById('comboAddPrice');
+  var subEl = document.getElementById('comboAddSub');
+  if(bar) bar.style.display = 'flex';
+  if(priceEl) priceEl.textContent = '₹'+d.price;
+  if(subEl) subEl.textContent = d.items.length + ' item'+(d.items.length!==1?'s':'')+' included';
+}
+
+function addComboToCart(){
+  if(!_currentCombo) return;
+  // Add combo as a single cart entry with combo price
+  var comboKey = 'combo_'+_currentCombo.id;
+  cart[comboKey] = {name: '🎁 '+_currentCombo.name, price: _currentCombo.price, qty: 1, isCombo: true, comboId: _currentCombo.id};
+  saveCart(); updateCartBar();
+  showToast(_currentCombo.name+' added to cart!','success');
+  goTo(1);  // back to categories
+}
+
+// ── MENU PAGE: LIVE ORDER TRACKING ─────────────────────────────
+var MLC_ID = {% if active_order %}{{ active_order.order.id }}{% else %}null{% endif %};
+var MLC_ST = '{% if active_order %}{{ active_order.order.status }}{% else %}{% endif %}';
+var MLC_SORD = ['pending','accepted','preparing','ready'];
+var MLC_CFG = {
+  pending:   {icon:'⏳', title:'Order Received!',   desc:'Waiting for staff to accept your order.'},
+  accepted:  {icon:'✅', title:'Order Accepted!',   desc:'Our team has accepted your order!'},
+  preparing: {icon:'👨‍🍳',title:'Being Prepared!',  desc:'Your food is being cooked right now!'},
+  ready:     {icon:'🔔', title:'Ready to Serve!',   desc:'Your food is ready! Staff will bring it soon.'},
+  completed: {icon:'🎉', title:'Order Complete!',   desc:'Tap below to view your bill.'},
+  cancelled: {icon:'❌', title:'Order Cancelled',   desc:'Your order was cancelled.'},
+};
+
+function mlcUpdateProg(status) {
+  var idx = MLC_SORD.indexOf(status);
+  document.querySelectorAll('.mlc-ps').forEach(function(el, i) {
+    var pd = el.querySelector('.mlc-pd');
+    var pl = el.querySelector('.mlc-pl');
+    pd.style.background = i < idx ? '#27ae60' : i === idx ? '#e74c3c' : 'rgba(255,255,255,.07)';
+    pd.style.borderColor = i < idx ? '#27ae60' : i === idx ? '#e74c3c' : 'rgba(255,255,255,.18)';
+    pl.style.color = (i <= idx) ? 'rgba(255,255,255,.85)' : 'rgba(255,255,255,.4)';
+    pl.style.fontWeight = (i <= idx) ? '700' : '';
+  });
+  [1,2,3].forEach(function(n) {
+    var el = document.getElementById('mpl'+n);
+    if (el) el.style.background = idx >= n ? '#27ae60' : 'rgba(255,255,255,.1)';
+  });
+}
+
+function mlcUpdateActions(status, orderId) {
+  var el = document.getElementById('mlcActions'); if (!el) return;
+  var menuUrl = TABLE_ID ? '/table/'+TABLE_ID+'/menu/' : '/takeaway/';
+  var addUrl  = TABLE_ID ? '/table/'+TABLE_ID+'/menu/?reorder_from='+MLC_ID : '/takeaway/?reorder_from='+MLC_ID;
+  var btnStyle = 'flex:1;padding:10px;border-radius:10px;font-family:Poppins,sans-serif;font-size:12px;font-weight:700;text-align:center;text-decoration:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.12);color:white';
+  if (status === 'completed') {
+    el.innerHTML = '<a href="/order/'+orderId+'/bill/" style="flex:1;padding:10px;background:#27ae60;color:white;border-radius:10px;font-family:Poppins,sans-serif;font-size:12px;font-weight:700;text-align:center;text-decoration:none">🧾 View Bill & Pay</a>';
+  } else if (status === 'cancelled') {
+    el.innerHTML = '<a href="'+menuUrl+'" style="flex:1;padding:10px;background:#e74c3c;color:white;border-radius:10px;font-family:Poppins,sans-serif;font-size:12px;font-weight:700;text-align:center;text-decoration:none">📋 Order Again</a>';
+  } else {
+    // Active order: show only Details button
+    el.innerHTML = '<a href="/customer/history/" style="'+btnStyle+'">\uD83D\uDCCB Details</a>';
+  }
+}
+
+function mlcRender(data) {
+  var status = data.status || 'pending';
+  var cfg = MLC_CFG[status] || MLC_CFG.pending;
+  var icon = document.getElementById('mlcIcon');
+  var title = document.getElementById('mlcTitle');
+  var desc = document.getElementById('mlcDesc');
+  var tot = document.getElementById('mlcTot');
+  if (icon)  icon.textContent  = cfg.icon;
+  if (title) title.textContent = cfg.title;
+  if (desc)  desc.textContent  = cfg.desc;
+  if (tot && data.combined_total !== undefined) tot.textContent = '₹' + Math.round(data.combined_total);
+  mlcUpdateProg(status);
+  mlcUpdateActions(status, data.order_id || MLC_ID);
+  MLC_ST = status;
+}
+
+// Initial render
+if (MLC_ID) mlcRender({status: MLC_ST, order_id: MLC_ID});
+
+// Poll every 5s for live order status
+var _pollTimer = null;
+async function mlcPoll() {
+  if (!MLC_ID) return;
+  try {
+    var r = await fetch('/live-order/data/?order_id='+MLC_ID, {headers:{'X-Requested-With':'XMLHttpRequest'}});
+    if (!r.ok) {
+      // 404 or other error — order doesn't exist, stop polling silently
+      MLC_ID = null;
+      if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+      return;
+    }
+    var d = await r.json();
+    if (d.error) { MLC_ID = null; return; }
+    // Keep live order state in sync for billing logic
+    _liveOrderStatus   = d.status;
+    _liveOrderComplete = (d.status === 'completed' || d.status === 'cancelled');
+    if (step === 1) mlcRender(d);
+    if ((d.all_completed || d.status === 'cancelled') && MLC_ST !== d.status) {
+      MLC_ST = d.status;
+      // Completed: reload page so fresh-bill mode activates
+      setTimeout(function(){ location.reload(); }, 1800);
+    }
+  } catch(e) { /* network error — silently ignore, try again next tick */ }
+}
+if (MLC_ID) _pollTimer = setInterval(mlcPoll, 5000);
+
+// History accordion on menu categories page
+function mnuTogHist(id) {
+  var body = document.getElementById('mhbody-'+id);
+  var chev = document.getElementById('mhchev-'+id);
+  if (!body) return;
+  var open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+</script>
+{% endblock %}
