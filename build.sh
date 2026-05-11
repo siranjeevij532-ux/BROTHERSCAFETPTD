@@ -7,6 +7,8 @@ python manage.py collectstatic --noinput
 
 python manage.py migrate
 
+python seed_brothers_cafe.py
+
 python manage.py shell -c "
 import os
 from django.contrib.auth import get_user_model
